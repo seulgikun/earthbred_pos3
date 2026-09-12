@@ -45,6 +45,11 @@ return [
             'auth_mode' => null,
         ],
 
+        'resend' => [
+            'transport' => 'resend',
+            'api_key' => env('RESEND_API_KEY'),
+        ],
+
         'ses' => [
             'transport' => 'ses',
         ],

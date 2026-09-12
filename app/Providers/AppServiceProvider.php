@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\Transport\ResendTransport;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -32,5 +34,11 @@ class AppServiceProvider extends ServiceProvider
         ) {
             URL::forceScheme('https');
         }
+
+        // Register custom Resend mail transport
+        Mail::extend('resend', function (array $config = []) {
+            $apiKey = $config['api_key'] ?? config('services.resend.key', env('RESEND_API_KEY'));
+            return new ResendTransport($apiKey);
+        });
     }
 }
