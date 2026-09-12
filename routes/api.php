@@ -26,7 +26,7 @@ Route::get('/hello', function () {
 // Authentication & Password Management with Brute-Force Rate Limiting
 Route::post('/login', [UserController::class, 'login'])->middleware('throttle:5,1');
 Route::post('/login/pin', [UserController::class, 'loginWithPin'])->middleware('throttle:10,1');
-Route::post('/forgot-password', [UserController::class, 'forgotPassword'])->middleware('throttle:3,1');
+Route::post('/forgot-password', [UserController::class, 'forgotPassword'])->middleware('throttle:10,1');
 Route::post('/reset-password', [UserController::class, 'resetPassword'])->middleware('throttle:5,1');
 
 // Staff Account Management

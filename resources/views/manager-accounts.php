@@ -976,7 +976,17 @@
                 try {
                     data = await res.json();
                 } catch (jsonErr) {
-                    data = { success: false, message: 'HTTP ' + res.status + ' — Could not parse server response.' };
+                    if (res.status === 429) {
+                        data = { success: false, message: 'Too many requests. Please wait 1 minute before trying again.' };
+                    } else {
+                        data = { success: false, message: 'HTTP ' + res.status + ' — Could not parse server response.' };
+                    }
+                }
+
+                // Handle throttle response (data.message may be empty on 429)
+                if (res.status === 429) {
+                    data.success = false;
+                    data.message = data.message || 'Too many password reset requests. Please wait 1 minute and try again.';
                 }
 
                 document.getElementById('ownerResetInfo').style.display = 'none';
