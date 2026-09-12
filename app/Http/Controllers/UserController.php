@@ -390,20 +390,21 @@ class UserController extends Controller
         $resetUrl = url('/reset-password?token=' . $token . '&email=' . urlencode($email));
         \Log::info("PASSWORD RESET LINK FOR {$email}: {$resetUrl}");
 
+        $mailError = null;
         try {
             $user->notify(new OwnerPasswordResetNotification($token));
         } catch (\Throwable $e) {
-            \Log::error('Failed sending password reset email: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Mail delivery error: ' . $e->getMessage(),
-                'reset_url' => $resetUrl
-            ], 500);
+            $mailError = $e->getMessage();
+            \Log::error('Failed sending password reset email: ' . $mailError);
+            \Log::info("MANUAL RESET URL (mail failed): {$resetUrl}");
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'A password reset link has been sent to ' . $email . '. Please check your email inbox.'
+            'message' => $mailError
+                ? 'Password reset link generated. Email delivery failed (' . $mailError . '). Please contact your administrator or check Railway logs for the reset link.'
+                : 'A password reset link has been sent to ' . $email . '. Please check your email inbox.',
+            'email_sent' => is_null($mailError),
         ]);
     }
 
