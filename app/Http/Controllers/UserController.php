@@ -396,7 +396,8 @@ class UserController extends Controller
             \Log::error('Failed sending password reset email: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Mail delivery error. Please verify SMTP settings.'
+                'message' => 'Mail delivery error: ' . $e->getMessage(),
+                'reset_url' => $resetUrl
             ], 500);
         }
 
