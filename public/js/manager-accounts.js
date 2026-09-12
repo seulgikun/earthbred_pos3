@@ -193,12 +193,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const resetBtnText = user.role === 'cashier' ? 'Reset PIN' : 'Reset Password';
 
-            const activateBtn = !user.email_verified_at
-                ? `<button class="action-btn" onclick="activateUser(${user.id}, '${user.name.replace(/'/g, "\\'")}')" style="color: #2e7d32; border-color: #a5d6a7; margin-left: 5px;">
-                    <i class="fa-solid fa-circle-check"></i> Activate
-                   </button>`
-                : '';
-
             tr.innerHTML = `
                 <td><strong>${user.name}</strong></td>
                 <td>${user.email}</td>
@@ -208,7 +202,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button class="action-btn" onclick="openChangePasswordModal(${user.id}, '${user.name.replace(/'/g, "\\'")}', '${user.role}', '${user.pin || ''}')">
                         <i class="fa-solid fa-key"></i> ${resetBtnText}
                     </button>
-                    ${activateBtn}
                     <button class="action-btn" onclick="deleteUser(${user.id}, '${user.name.replace(/'/g, "\\'")}')" style="color: #d32f2f; border-color: #ffcdd2; margin-left: 5px;">
                         <i class="fa-solid fa-trash"></i> Delete
                     </button>
@@ -217,56 +210,6 @@ document.addEventListener('DOMContentLoaded', () => {
             tbody.appendChild(tr);
         });
     }
-
-    // Activate/Verify User manually
-    window.activateUser = async function(id, name) {
-        const confirmed = await PosDialog.confirm({
-            title: 'Activate Account',
-            message: `Do you want to manually activate and verify the account for ${name}?`,
-            icon: 'fa-user-check',
-            iconType: 'info',
-            confirmText: 'Activate Now',
-            cancelText: 'Cancel'
-        });
-
-        if (!confirmed) return;
-
-        fetch(`${BASE}/api/users/${id}/activate`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                PosDialog.alert({
-                    title: 'Account Activated',
-                    message: data.message || `Account for ${name} has been verified successfully!`,
-                    icon: 'fa-circle-check',
-                    iconType: 'success'
-                });
-                loadAccounts();
-            } else {
-                PosDialog.alert({
-                    title: 'Activation Error',
-                    message: data.message || 'Error activating account.',
-                    icon: 'fa-triangle-exclamation',
-                    iconType: 'danger'
-                });
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            PosDialog.alert({
-                title: 'Server Error',
-                message: 'Could not connect to server.',
-                icon: 'fa-circle-xmark',
-                iconType: 'danger'
-            });
-        });
-    };
 
     // Delete User
     window.deleteUser = async function(id, name) {

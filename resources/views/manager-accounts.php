@@ -885,7 +885,7 @@
                         style="margin-top:8px; font-weight:700; color:#3d271d; background:#fdf8f2; padding:8px 12px; border-radius:8px; border:1px solid #e2d5c3; word-break:break-all;">
                     </p>
                     <p style="margin-top:10px; font-size:0.8rem; color:#8d786c;"><i class="fa-solid fa-clock"></i> The
-                        reset link will expire in <strong>60 minutes</strong>.</p>
+                        reset link will expire in <strong>10 minutes</strong>.</p>
                 </div>
                 <div id="ownerResetResult" style="display:none; text-align:center; padding:16px 0;"></div>
                 <div style="display:flex; gap:10px;">
