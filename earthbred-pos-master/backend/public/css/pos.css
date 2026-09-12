@@ -1,0 +1,651 @@
+/* ==========================================================================
+   Earthbred POS - Liquid Glass POS Terminal & Order Cart Styles
+   ========================================================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    background:
+        radial-gradient(at 0% 0%,   rgba(246,238,228,1)    0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(254,240,200,0.75)  0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(252,222,140,0.45) 0px, transparent 50%),
+        radial-gradient(at 0% 100%, rgba(244,226,210,0.92)  0px, transparent 50%),
+        #f7f2ed !important;
+    background-attachment: fixed !important;
+    color: #1c1612 !important;
+    height: 100vh;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.app-container {
+    width: 100%;
+    height: 100vh;
+    background: transparent !important;
+    display: flex;
+    overflow: hidden;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    background: linear-gradient(180deg, rgba(252, 247, 242, 0.85) 0%, rgba(246, 238, 230, 0.76) 100%) !important;
+    backdrop-filter: blur(32px) saturate(210%) !important;
+    -webkit-backdrop-filter: blur(32px) saturate(210%) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.75) !important;
+    box-shadow: 4px 0 35px rgba(0, 0, 0, 0.04) !important;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.logo-section {
+    padding: 1.5rem;
+    text-align: center;
+    border-bottom: 1px solid rgba(220, 200, 180, 0.4);
+}
+
+.logo-main {
+    font-family: 'Outfit', sans-serif !important;
+    font-weight: 800 !important;
+    font-size: 1.85rem !important;
+    letter-spacing: -0.03em !important;
+    background: linear-gradient(135deg, #533524 0%, #3d271d 60%, #26160e 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    line-height: 1;
+}
+
+.logo-sub {
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-weight: 600 !important;
+    font-size: 0.65rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.12em !important;
+    color: #927e70 !important;
+    margin-top: 0.2rem;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem !important;
+    margin: 0.75rem 1rem !important;
+    background: rgba(255, 255, 255, 0.68) !important;
+    backdrop-filter: blur(14px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.75) !important;
+    border-radius: 18px !important;
+    gap: 12px;
+    box-shadow: 0 4px 14px rgba(44, 30, 20, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.profile-icon {
+    font-size: 1.8rem !important;
+    color: #d97706 !important;
+}
+
+.user-name {
+    font-family: 'Outfit', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 0.95rem !important;
+    color: #1c1612 !important;
+}
+
+.user-id {
+    font-size: 0.75rem !important;
+    color: #8c786c !important;
+}
+
+.menu-section {
+    padding: 0.75rem 0;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.menu-heading {
+    font-family: 'Outfit', sans-serif !important;
+    font-size: 0.7rem !important;
+    font-weight: 700 !important;
+    color: #8c786c !important;
+    padding: 0 1.5rem;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.menu-list {
+    list-style: none;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1.1rem !important;
+    margin: 0.35rem 0.85rem !important;
+    border-radius: 9999px !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    color: #594a40 !important;
+    cursor: pointer;
+    transition: all 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+    gap: 12px;
+    border: 1px solid transparent !important;
+}
+
+.menu-item:hover {
+    background: rgba(255, 255, 255, 0.72) !important;
+    color: #1c1612 !important;
+    transform: translateX(4px);
+    border-color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.menu-item.active {
+    background: linear-gradient(135deg, #533524 0%, #3d271d 60%, #26160e 100%) !important;
+    color: #ffffff !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 8px 24px rgba(45, 26, 17, 0.38) !important;
+    font-weight: 700 !important;
+}
+
+.menu-item.active .menu-icon {
+    color: #ffffff !important;
+}
+
+.menu-icon {
+    font-size: 1.1rem;
+}
+
+/* Clock Out Pill */
+.clock-out {
+    margin: 1.25rem 1rem !important;
+    padding: 0.85rem 1.25rem !important;
+    border-radius: 9999px !important;
+    background: rgba(239, 68, 68, 0.12) !important;
+    border: 1px solid rgba(239, 68, 68, 0.3) !important;
+    color: #dc2626 !important;
+    font-family: 'Outfit', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 0.9rem !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    cursor: pointer;
+    transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+.clock-out:hover {
+    background: #dc2626 !important;
+    color: #ffffff !important;
+    box-shadow: 0 8px 24px rgba(220, 38, 38, 0.4) !important;
+    transform: scale(1.025);
+}
+
+/* ==========================================================================
+   Main Content Area & Product Grid
+   ========================================================================== */
+.main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    background: transparent !important;
+}
+
+.top-header {
+    background: linear-gradient(135deg, rgba(255,255,255,0.84) 0%, rgba(255,255,255,0.68) 100%) !important;
+    backdrop-filter: blur(32px) saturate(210%) !important;
+    -webkit-backdrop-filter: blur(32px) saturate(210%) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.75) !important;
+    padding: 0.9rem 1.75rem !important;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 14px rgba(44, 30, 20, 0.04);
+}
+
+.order-btn {
+    background: linear-gradient(135deg, #533524 0%, #3d271d 60%, #26160e 100%) !important;
+    color: #ffffff !important;
+    border-radius: 9999px !important;
+    font-family: 'Outfit', sans-serif !important;
+    font-weight: 700 !important;
+    padding: 0.75rem 1.4rem !important;
+    border: none !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 8px 24px rgba(45, 26, 17, 0.38) !important;
+    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.22s ease !important;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.order-btn:hover {
+    transform: translateY(-2px) scale(1.025);
+    box-shadow: 0 10px 28px rgba(217, 119, 6, 0.45) !important;
+}
+
+/* Liquid Product Grid */
+.product-grid {
+    padding: 1.5rem;
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;
+    gap: 1.25rem !important;
+    overflow-y: auto;
+}
+
+.product-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.84) 0%, rgba(255, 255, 255, 0.68) 100%) !important;
+    backdrop-filter: blur(32px) saturate(210%) !important;
+    -webkit-backdrop-filter: blur(32px) saturate(210%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.75) !important;
+    border-radius: 24px !important;
+    padding: 1.25rem !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    box-shadow: 0 14px 36px -10px rgba(44, 30, 20, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+    cursor: pointer;
+    transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.28s ease !important;
+}
+
+.product-card:hover {
+    transform: translateY(-5px) scale(1.018);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.82) 100%) !important;
+    box-shadow: 0 24px 50px -12px rgba(44, 30, 20, 0.16) !important;
+}
+
+.add-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(255, 255, 255, 0.88) !important;
+    backdrop-filter: blur(10px) !important;
+    color: #1c1612 !important;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s !important;
+}
+
+.product-card:hover .add-btn {
+    background: linear-gradient(135deg, #533524 0%, #3d271d 60%, #26160e 100%) !important;
+    color: #ffffff !important;
+    transform: rotate(90deg) scale(1.1);
+}
+
+.product-image {
+    width: 90px;
+    height: 100px;
+    object-fit: contain;
+    margin-bottom: 0.75rem;
+    filter: drop-shadow(0 8px 12px rgba(0,0,0,0.08));
+    transition: transform 0.3s ease;
+}
+
+.product-card:hover .product-image {
+    transform: scale(1.06);
+}
+
+.product-name {
+    font-family: 'Outfit', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 1rem !important;
+    color: #1c1612 !important;
+    text-align: center;
+    margin-bottom: 0.3rem;
+}
+
+.product-price {
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-weight: 800 !important;
+    font-size: 0.95rem !important;
+    color: #d97706 !important;
+}
+
+/* ==========================================================================
+   Liquid Product Customizer & Order Modal
+   ========================================================================== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 12, 10, 0.55) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.82) 100%) !important;
+    backdrop-filter: blur(36px) saturate(220%) !important;
+    -webkit-backdrop-filter: blur(36px) saturate(220%) !important;
+    border-radius: 28px !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.9) !important;
+    width: 90%;
+    max-width: 460px;
+    max-height: 90vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 2rem !important;
+    box-shadow: 0 28px 60px -12px rgba(44,30,20,0.22), inset 0 1px 0 rgba(255,255,255,1) !important;
+    position: relative;
+    animation: modalPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalPop {
+    from { transform: scale(0.9) translateY(15px); opacity: 0; }
+    to   { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+    border-bottom: 1px solid rgba(220, 200, 180, 0.4);
+    padding-bottom: 0.85rem;
+}
+
+.modal-title {
+    font-family: 'Outfit', sans-serif !important;
+    font-weight: 800 !important;
+    font-size: 1.35rem !important;
+    color: #1c1612 !important;
+}
+
+.close-modal-btn {
+    background: rgba(255,255,255,0.85) !important;
+    border: 1.5px solid rgba(210,195,180,0.5) !important;
+    border-radius: 50% !important;
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 1rem;
+    cursor: pointer;
+    color: #594a40;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.22s ease;
+}
+
+.close-modal-btn:hover {
+    background: #dc2626 !important;
+    color: #fff !important;
+    transform: scale(1.08);
+}
+
+.modal-body {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1.35rem !important;
+}
+
+.customer-section, .quantity-section, .addons-section {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+}
+
+.modal-footer {
+    margin-top: 1.75rem !important;
+    padding-top: 0.25rem !important;
+    width: 100% !important;
+}
+
+.quantity-section h4, .addons-section h4, .customer-section h4 {
+    font-family: 'Outfit', sans-serif !important;
+    font-weight: 800 !important;
+    font-size: 0.8rem !important;
+    color: #6b5a4e !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    margin-bottom: 0.35rem !important;
+}
+
+.customer-input {
+    width: 100%;
+    padding: 0.85rem 1.1rem !important;
+    border: 1.5px solid rgba(210,195,180,0.5) !important;
+    border-radius: 16px !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: 0.95rem !important;
+    background: rgba(255,255,255,0.78) !important;
+    outline: none;
+    color: #1c1612 !important;
+    transition: all 0.2s ease;
+}
+
+.customer-input:focus {
+    background: #ffffff !important;
+    border-color: #d97706 !important;
+    box-shadow: 0 0 0 4px rgba(217,119,6,0.16) !important;
+}
+
+.quantity-controls {
+    display: flex !important;
+    align-items: center !important;
+    gap: 14px !important;
+    margin-top: 0.25rem !important;
+}
+
+.qty-btn {
+    background: rgba(255, 255, 255, 0.92) !important;
+    border: 1.5px solid rgba(210, 195, 180, 0.6) !important;
+    border-radius: 50% !important;
+    width: 42px !important;
+    height: 42px !important;
+    font-size: 1rem !important;
+    cursor: pointer !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    color: #1c1612 !important;
+    box-shadow: 0 4px 12px rgba(44, 30, 20, 0.08) !important;
+    transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    outline: none !important;
+    user-select: none !important;
+}
+
+.qty-btn:hover {
+    background: linear-gradient(135deg, #533524 0%, #3d271d 60%, #26160e 100%) !important;
+    color: #ffffff !important;
+    border-color: transparent !important;
+    transform: scale(1.1) !important;
+    box-shadow: 0 6px 16px rgba(45, 26, 17, 0.35) !important;
+}
+
+.qty-btn:active {
+    transform: scale(0.95) !important;
+}
+
+.qty-input {
+    width: 56px !important;
+    height: 42px !important;
+    text-align: center !important;
+    font-family: 'Outfit', -apple-system, sans-serif !important;
+    font-weight: 800 !important;
+    font-size: 1.4rem !important;
+    border: none !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    color: #1c1612 !important;
+    -webkit-text-fill-color: #1c1612 !important;
+    outline: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: textfield !important;
+    appearance: none !important;
+}
+
+.qty-input::-webkit-outer-spin-button,
+.qty-input::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+
+/* Liquid Addon Cards */
+.addons-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+.addon-item {
+    margin-bottom: 0;
+}
+
+.addon-label {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0.75rem 1.1rem !important;
+    background: rgba(255, 255, 255, 0.72) !important;
+    border: 1.5px solid rgba(210, 195, 180, 0.45) !important;
+    border-radius: 16px !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    color: #382d26 !important;
+    cursor: pointer !important;
+    transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    box-shadow: 0 4px 12px rgba(44, 30, 20, 0.03), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+.addon-label:hover {
+    background: rgba(255, 255, 255, 0.92) !important;
+    transform: translateY(-2px);
+}
+
+.addon-label:has(.addon-checkbox:checked),
+.addon-label.checked {
+    background: linear-gradient(135deg, rgba(83, 53, 36, 0.12) 0%, rgba(61, 39, 29, 0.2) 100%) !important;
+    border-color: #3d271d !important;
+    color: #3d271d !important;
+    font-weight: 700 !important;
+    box-shadow: 0 6px 18px rgba(45, 26, 17, 0.2) !important;
+}
+
+.addon-checkbox {
+    width: 20px !important;
+    height: 20px !important;
+    accent-color: #3d271d !important;
+    cursor: pointer !important;
+}
+
+.add-to-order-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #533524 0%, #3d271d 60%, #26160e 100%) !important;
+    color: white !important;
+    font-family: 'Outfit', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 1.05rem !important;
+    padding: 0.95rem !important;
+    border: none !important;
+    border-radius: 9999px !important;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 10px 25px rgba(45,26,17,0.38) !important;
+    transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.22s ease !important;
+}
+
+.add-to-order-btn:hover {
+    transform: translateY(-2px) scale(1.02) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.55), 0 14px 30px rgba(45,26,17,0.46) !important;
+}
+
+/* ==========================================================================
+   Responsive Adaptations (Tablet & Mobile Phone Flexibility)
+   ========================================================================== */
+
+/* Tablet & Mobile: sidebar becomes off-canvas drawer (matches ios26-theme.css breakpoint) */
+@media (max-width: 1280px) {
+    .app-container {
+        flex-direction: column !important;
+        height: 100vh !important;
+        overflow: hidden !important;
+    }
+
+    /* Sidebar is hidden off-screen — ios26-theme.css handles the transform */
+    .sidebar {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 300px !important;
+        max-width: 88vw !important;
+        height: 100vh !important;
+        z-index: 9999 !important;
+        transform: translateX(-105%) !important;
+        transition: transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+        box-shadow: 14px 0 45px rgba(0, 0, 0, 0.28) !important;
+        overflow-y: auto !important;
+    }
+
+    .sidebar.active {
+        transform: translateX(0) !important;
+    }
+
+    .main-content {
+        width: 100% !important;
+        height: 100vh !important;
+        overflow-y: auto !important;
+    }
+
+    .top-header {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 100 !important;
+        padding: 0.75rem 1.25rem !important;
+    }
+
+    .product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important;
+        gap: 1rem !important;
+        padding: 1.25rem !important;
+    }
+}
+
+/* Mobile Phones (< 600px) */
+@media (max-width: 599px) {
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.75rem !important;
+        padding: 0.85rem !important;
+    }
+
+    .product-card {
+        padding: 0.85rem !important;
+        border-radius: 18px !important;
+    }
+
+    .modal-content {
+        width: 95vw !important;
+        padding: 1.25rem !important;
+    }
+}

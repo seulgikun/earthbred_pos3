@@ -1,0 +1,225 @@
+/* ============================================================
+   manager-ai.css — Liquid Glass AI Gemini Assistant Page
+   Override all hardcoded cream/brown colors with glass tokens
+   ============================================================ */
+
+.ai-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: transparent !important;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* AI Header Bar */
+.ai-header {
+    padding: 1rem 1.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.65) !important;
+    background: linear-gradient(135deg, rgba(255,255,255,0.82) 0%, rgba(255,255,255,0.65) 100%) !important;
+    backdrop-filter: blur(28px) saturate(190%) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+    box-shadow: 0 4px 14px rgba(44,30,20,0.04);
+}
+
+.ai-header h2 {
+    font-family: 'Outfit', -apple-system, sans-serif !important;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1c1612;
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.ai-content-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 1.25rem 1.75rem;
+    gap: 1rem;
+}
+
+/* Title Banner */
+.ai-title-banner {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.1rem 1.4rem;
+    background: linear-gradient(135deg, rgba(255,255,255,0.82) 0%, rgba(255,255,255,0.65) 100%) !important;
+    backdrop-filter: blur(28px) saturate(190%) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.7) !important;
+    border-radius: 18px !important;
+    box-shadow: 0 12px 32px -8px rgba(44,30,20,0.09), inset 0 1px 0 rgba(255,255,255,0.9);
+}
+
+.ai-icon {
+    font-size: 2rem;
+}
+
+.ai-title-text h3 {
+    margin: 0 0 3px 0;
+    font-family: 'Outfit', sans-serif !important;
+    font-size: 1.15rem;
+    color: #1c1612;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.ai-title-text p {
+    margin: 0;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: 0.82rem;
+    color: #6b5a4e;
+    font-weight: 500;
+}
+
+/* Chat Window */
+.ai-chat-window {
+    flex: 1;
+    padding: 1.25rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    background: linear-gradient(135deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.45) 100%) !important;
+    backdrop-filter: blur(20px) saturate(170%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(170%) !important;
+    border: 1px solid rgba(255,255,255,0.65) !important;
+    border-radius: 22px !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 8px 20px rgba(44,30,20,0.04);
+}
+
+.ai-chat-window::-webkit-scrollbar { width: 5px; }
+.ai-chat-window::-webkit-scrollbar-track { background: transparent; }
+.ai-chat-window::-webkit-scrollbar-thumb {
+    background: rgba(180, 83, 9, 0.25);
+    border-radius: 999px;
+}
+
+/* Chat Messages */
+.chat-message {
+    display: flex;
+    gap: 0.85rem;
+    max-width: 82%;
+}
+
+.bot-message { align-self: flex-start; }
+.user-message { align-self: flex-end; flex-direction: row-reverse; }
+
+.message-avatar {
+    font-size: 1.6rem;
+    width: 38px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.message-bubble {
+    padding: 1rem 1.25rem;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: 0.9rem;
+    color: #261e19;
+    line-height: 1.6;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    box-shadow: 0 6px 16px rgba(44,30,20,0.06), inset 0 1px 0 rgba(255,255,255,0.8);
+}
+
+.bot-bubble {
+    background: linear-gradient(135deg, rgba(255,255,255,0.88) 0%, rgba(255,248,236,0.82) 100%) !important;
+    border: 1px solid rgba(255,255,255,0.8) !important;
+    border-radius: 6px 20px 20px 20px !important;
+}
+
+.user-bubble {
+    background: linear-gradient(135deg, #533524 0%, #3d271d 60%, #26160e 100%) !important;
+    color: #fff !important;
+    border: 1px solid rgba(255,255,255,0.2) !important;
+    border-radius: 20px 6px 20px 20px !important;
+}
+
+.bot-bubble ul { padding-left: 1.2rem; margin: 0.6rem 0; }
+.bot-bubble p { margin: 0 0 0.6rem 0; }
+.bot-bubble p:last-child { margin: 0; }
+
+/* Input Area */
+.ai-input-area {
+    padding: 0;
+    background: transparent !important;
+    border-top: none !important;
+}
+
+.chat-form {
+    display: flex;
+    gap: 0.75rem;
+    background: linear-gradient(135deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.7) 100%) !important;
+    backdrop-filter: blur(28px) saturate(190%) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+    border: 1px solid rgba(255,255,255,0.8) !important;
+    border-radius: 9999px !important;
+    padding: 0.5rem 0.5rem 0.5rem 1.25rem;
+    box-shadow: 0 12px 28px rgba(44,30,20,0.08), inset 0 1px 0 rgba(255,255,255,1);
+}
+
+.chat-form input {
+    flex: 1;
+    padding: 0.7rem 0;
+    border: none !important;
+    background: transparent !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: 0.95rem;
+    color: #1c1612;
+    outline: none;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+}
+
+.chat-form input::placeholder { color: #b09e94; }
+
+.send-btn {
+    background: linear-gradient(135deg, #533524 0%, #3d271d 60%, #26160e 100%) !important;
+    color: #fff;
+    border: none;
+    border-radius: 9999px !important;
+    width: 46px;
+    height: 46px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 6px 18px rgba(45,26,17,0.38);
+    transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s ease;
+}
+
+.send-btn:hover {
+    transform: scale(1.08);
+    box-shadow: 0 8px 24px rgba(217,119,6,0.48);
+}
+
+.send-btn:active { transform: scale(0.95); }
+
+/* Responsive Adjustments */
+@media (max-width: 899px) {
+    .ai-content-wrap {
+        padding: 1rem;
+    }
+    .ai-header {
+        padding: 0.85rem 1.25rem;
+    }
+}
+
+@media (max-width: 599px) {
+    .ai-content-wrap {
+        padding: 0.75rem;
+    }
+    .ai-title-banner {
+        padding: 0.85rem;
+    }
+    .ai-chat-window {
+        padding: 0.85rem;
+    }
+}
+
