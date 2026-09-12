@@ -1,0 +1,232 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f5f1e9;
+    color: #1a1a1a;
+}
+
+.login-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Left Side Image */
+.login-image-section {
+    flex: 0 0 40%;
+    background-image: url('../images/left-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+}
+
+/* Right Side Form */
+.login-form-section {
+    flex: 0 0 60%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #f5f1e9;
+    position: relative;
+    padding: 2rem;
+}
+
+.form-wrapper {
+    width: 100%;
+    max-width: 450px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Logo */
+.logo-container {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.logo-main {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 2.5rem;
+    letter-spacing: -1px;
+    color: #000;
+    line-height: 1;
+}
+
+.logo-sub {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    color: #333;
+    margin-top: 0.2rem;
+}
+
+/* Heading */
+.heading-container {
+    position: relative;
+    margin-bottom: 2.5rem;
+}
+
+.main-heading {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 2.4rem;
+    line-height: 1.2;
+    color: #000;
+}
+
+.coffee-cup-image {
+    position: absolute;
+    right: -40px;
+    top: -40px;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: -5px 10px 20px rgba(0,0,0,0.15);
+    z-index: 5;
+}
+
+/* Form Styles */
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.input-group label {
+    font-weight: 500;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid #b5a999;
+    border-radius: 8px;
+    background-color: #e5ded3;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    color: #333;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.input-group input:focus {
+    border-color: #5d4037;
+}
+
+/* Password wrapper for eye icon */
+.password-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-input-wrapper input {
+    padding-right: 40px;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 15px;
+    color: #666;
+    cursor: pointer;
+    font-size: 1.1rem;
+}
+
+.forgot-password {
+    align-self: flex-end;
+    font-size: 0.8rem;
+    color: #555;
+    text-decoration: none;
+    margin-top: 0.5rem;
+}
+
+.forgot-password:hover {
+    text-decoration: underline;
+}
+
+/* Login Button */
+.login-btn {
+    background-color: #523b32;
+    color: white;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    margin-top: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    width: 60%;
+    align-self: center;
+}
+
+.login-btn:hover {
+    background-color: #3c2a23;
+    transform: translateY(-2px);
+}
+
+.login-btn:active {
+    transform: translateY(0);
+}
+
+/* Sign up link */
+.signup-link {
+    text-align: center;
+    font-size: 0.95rem;
+    color: #555;
+    margin-top: 0.5rem;
+}
+
+.signup-link a {
+    color: #000;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.signup-link a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .login-container {
+        flex-direction: column;
+    }
+    
+    .login-image-section {
+        flex: 0 0 250px;
+        width: 100%;
+    }
+    
+    .login-form-section {
+        flex: 1;
+        width: 100%;
+    }
+    
+    .coffee-cup-image {
+        width: 100px;
+        height: 100px;
+        right: 0;
+        top: -20px;
+    }
+}
