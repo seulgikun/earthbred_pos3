@@ -111,6 +111,10 @@ class BrevoTransport extends Transport
 
             $this->sendPerformed($message);
             return $this->numberOfRecipients($message);
+        } catch (\GuzzleHttp\Exception\RequestException $e) {
+            $errBody = $e->hasResponse() ? (string) $e->getResponse()->getBody() : $e->getMessage();
+            \Log::error('Brevo API send error response: ' . $errBody);
+            throw new \Exception('Brevo API Error: ' . $errBody, $e->getCode(), $e);
         } catch (\Throwable $e) {
             \Log::error('Brevo API send error: ' . $e->getMessage());
             throw $e;
