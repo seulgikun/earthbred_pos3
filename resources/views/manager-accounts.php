@@ -971,21 +971,28 @@
                     },
                     body: JSON.stringify({ email: email })
                 });
-                const data = await res.json();
+
+                let data = {};
+                try {
+                    data = await res.json();
+                } catch (jsonErr) {
+                    data = { success: false, message: 'HTTP ' + res.status + ' — Could not parse server response.' };
+                }
+
                 document.getElementById('ownerResetInfo').style.display = 'none';
 
                 if (data.success) {
+                    const emailSent = data.email_sent !== false;
                     document.getElementById('ownerResetResult').innerHTML =
                         '<div style="text-align:center; padding: 10px 0;">'
-                        + '<i class="fa-solid fa-circle-check" style="font-size:3rem; color:#16a34a; margin-bottom:12px; display:block;"></i>'
-                        + '<p style="font-family:Montserrat,sans-serif; font-weight:700; font-size:1.1rem; color:#3d271d; margin-bottom:8px;">Verification Link Dispatched!</p>'
-                        + '<p style="font-family:Poppins,sans-serif; font-size:0.88rem; color:#5c4a40; line-height:1.5;">A password reset verification link has been sent to <strong>' + email + '</strong>.</p>'
-                        + '<p style="font-size:0.8rem; color:#8d786c; margin-top:12px;"><i class="fa-solid fa-clock"></i> The link will expire in <strong>10 minutes</strong>. Please check your email inbox and spam folder.</p>'
+                        + '<i class="fa-solid fa-circle-check" style="font-size:3rem; color:' + (emailSent ? '#16a34a' : '#ed6c02') + '; margin-bottom:12px; display:block;"></i>'
+                        + '<p style="font-family:Montserrat,sans-serif; font-weight:700; font-size:1.1rem; color:#3d271d; margin-bottom:8px;">' + (emailSent ? 'Reset Link Dispatched!' : 'Link Generated (Email Failed)') + '</p>'
+                        + '<p style="font-family:Poppins,sans-serif; font-size:0.88rem; color:#5c4a40; line-height:1.5;">' + data.message + '</p>'
                         + '</div>';
                     btn.style.display = 'none';
                 } else {
                     document.getElementById('ownerResetResult').innerHTML =
-                        '<p style="color:#c5221f; font-family:Poppins,sans-serif;"><i class="fa-solid fa-circle-xmark"></i> ' + (data.message || 'Failed to send verification link.') + '</p>';
+                        '<p style="color:#c5221f; font-family:Poppins,sans-serif;"><i class="fa-solid fa-circle-xmark"></i> ' + (data.message || 'Failed to send verification link. HTTP Status: ' + res.status) + '</p>';
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Try Again';
                 }
@@ -993,7 +1000,10 @@
             } catch (err) {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send Verification Link';
-                alert('Network error while connecting to mail service. Please check your connection.');
+                document.getElementById('ownerResetInfo').style.display = 'none';
+                document.getElementById('ownerResetResult').innerHTML =
+                    '<p style="color:#c5221f; font-family:Poppins,sans-serif;"><i class="fa-solid fa-circle-xmark"></i> Network error: ' + err.message + '</p>';
+                document.getElementById('ownerResetResult').style.display = 'block';
             }
         }
     </script>
