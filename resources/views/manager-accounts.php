@@ -738,7 +738,7 @@
 
                     <div class="form-group">
                         <label>Email Address</label>
-                        <input type="email" id="accountEmail" placeholder="e.g. maria@gmail.com" pattern="^[a-zA-Z0-9._%+-]+@gmail\.com$" title="Please enter a valid @gmail.com address" required>
+                        <input type="email" id="accountEmail" placeholder="e.g. maria@gmail.com" pattern="[a-zA-Z0-9._%+\-]+@gmail\.com" title="Please enter a valid @gmail.com address" required>
                         <small style="color: #8d786c; font-size: 0.75rem; display: block; margin-top: 3px;">Only @gmail.com addresses are supported. A verification email will be dispatched to this address.</small>
                     </div>
 

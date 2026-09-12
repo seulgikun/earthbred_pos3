@@ -187,7 +187,7 @@ class UserController extends Controller
                     'email',
                     'max:255',
                     'unique:users',
-                    'regex:/^[a-zA-Z0-9._%+-]+@gmail\.com$/i'
+                    'regex:/^[a-zA-Z0-9._%+\-]+@gmail\.com$/i'
                 ],
                 'pin' => 'required|digits:6|unique:users,pin',
                 'role' => 'required|in:manager,cashier',
@@ -225,7 +225,7 @@ class UserController extends Controller
                     'email',
                     'max:255',
                     'unique:users',
-                    'regex:/^[a-zA-Z0-9._%+-]+@gmail\.com$/i'
+                    'regex:/^[a-zA-Z0-9._%+\-]+@gmail\.com$/i'
                 ],
                 'password' => [
                     'required',
@@ -276,7 +276,7 @@ class UserController extends Controller
         $emailSent = true;
         try {
             $user->notify(new VerifyAccountNotification());
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $emailSent = false;
             \Log::error('Failed sending verification email: ' . $e->getMessage());
         }
@@ -392,7 +392,7 @@ class UserController extends Controller
 
         try {
             $user->notify(new OwnerPasswordResetNotification($token));
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             \Log::error('Failed sending password reset email: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
