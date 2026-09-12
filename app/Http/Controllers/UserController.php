@@ -361,51 +361,60 @@ class UserController extends Controller
      */
     public function forgotPassword(Request $request)
     {
-        $request->validate([
-            'email' => 'required|email'
-        ]);
+        try {
+            $request->validate([
+                'email' => 'required|email'
+            ]);
 
-        $email = strtolower(trim($request->email));
-        $user = User::where('email', $email)->first();
+            $email = strtolower(trim($request->email));
+            $user = User::where('email', $email)->first();
 
-        if (!$user) {
-            // Return uniform success response to prevent user enumeration
+            if (!$user) {
+                // Return uniform success response to prevent user enumeration
+                return response()->json([
+                    'success' => true,
+                    'message' => 'If an account exists with that email, a password reset link has been dispatched.'
+                ]);
+            }
+
+            // Generate password reset token
+            $token = Str::random(60);
+            DB::table('password_resets')->updateOrInsert(
+                ['email' => $email],
+                [
+                    'email' => $email,
+                    'token' => Hash::make($token),
+                    'created_at' => now()
+                ]
+            );
+
+            $resetUrl = url('/reset-password?token=' . $token . '&email=' . urlencode($email));
+            \Log::info("PASSWORD RESET LINK FOR {$email}: {$resetUrl}");
+
+            $mailError = null;
+            try {
+                $user->notify(new OwnerPasswordResetNotification($token));
+            } catch (\Throwable $e) {
+                $mailError = $e->getMessage();
+                \Log::error('Failed sending password reset email: ' . $mailError);
+                \Log::info("MANUAL RESET URL (mail failed): {$resetUrl}");
+            }
+
             return response()->json([
                 'success' => true,
-                'message' => 'If an account exists with that email, a password reset link has been dispatched.'
+                'message' => $mailError
+                    ? 'Password reset link generated. Email delivery failed (' . $mailError . '). Check Railway logs for the reset link.'
+                    : 'A password reset link has been sent to ' . $email . '. Please check your email inbox.',
+                'email_sent' => is_null($mailError),
             ]);
-        }
 
-        // Generate password reset token
-        $token = Str::random(60);
-        DB::table('password_resets')->updateOrInsert(
-            ['email' => $email],
-            [
-                'email' => $email,
-                'token' => Hash::make($token),
-                'created_at' => now()
-            ]
-        );
-
-        $resetUrl = url('/reset-password?token=' . $token . '&email=' . urlencode($email));
-        \Log::info("PASSWORD RESET LINK FOR {$email}: {$resetUrl}");
-
-        $mailError = null;
-        try {
-            $user->notify(new OwnerPasswordResetNotification($token));
         } catch (\Throwable $e) {
-            $mailError = $e->getMessage();
-            \Log::error('Failed sending password reset email: ' . $mailError);
-            \Log::info("MANUAL RESET URL (mail failed): {$resetUrl}");
+            \Log::error('forgotPassword fatal error: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+            return response()->json([
+                'success' => false,
+                'message' => 'Server error: ' . $e->getMessage(),
+            ], 500);
         }
-
-        return response()->json([
-            'success' => true,
-            'message' => $mailError
-                ? 'Password reset link generated. Email delivery failed (' . $mailError . '). Please contact your administrator or check Railway logs for the reset link.'
-                : 'A password reset link has been sent to ' . $email . '. Please check your email inbox.',
-            'email_sent' => is_null($mailError),
-        ]);
     }
 
     /**
