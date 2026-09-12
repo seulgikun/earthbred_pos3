@@ -1,0 +1,452 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #222222; /* Dark background matching image */
+    color: #1a1a1a;
+    height: 100vh;
+    padding: 1rem; /* Spacing around the main container */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.app-container {
+    width: 100%;
+    height: 100%;
+    background-color: #f7f3eb; /* Light cream background */
+    border-radius: 16px;
+    display: flex;
+    overflow: hidden; /* Ensure rounded corners clip content */
+}
+
+/* Sidebar Styles */
+.sidebar {
+    width: 250px;
+    background-color: #f5f0e6; /* Slightly lighter or same as header */
+    border-right: 2px solid #e5d9c5;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.logo-section {
+    padding: 1.5rem;
+    text-align: center;
+    border-bottom: 2px solid #e5d9c5;
+}
+
+.logo-main {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 1.5rem;
+    letter-spacing: -1px;
+    color: #000;
+    line-height: 1;
+}
+
+.logo-sub {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 0.55rem;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: #333;
+    margin-top: 0.2rem;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    padding: 1.5rem;
+    gap: 15px;
+}
+
+.profile-icon {
+    font-size: 2rem;
+    color: #000;
+}
+
+.user-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #000;
+}
+
+.user-id {
+    font-size: 0.75rem;
+    color: #888;
+}
+
+.menu-section {
+    padding: 1rem 0;
+    flex-grow: 1;
+}
+
+.menu-heading {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #666;
+    padding: 0 1.5rem;
+    margin-bottom: 0.5rem;
+    letter-spacing: 1px;
+}
+
+.menu-list {
+    list-style: none;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 0.8rem 1.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #000;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    gap: 15px;
+}
+
+.menu-item:hover {
+    background-color: #eee9dd;
+}
+
+.menu-item.active {
+    font-weight: 700;
+    /* You can add a subtle background if needed */
+}
+
+.menu-icon {
+    font-size: 1.1rem;
+}
+
+.clock-out {
+    padding: 1.5rem;
+    border-top: 2px solid #e5d9c5;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #dc3545; /* Red color for clock out */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: #f1ebd9;
+    justify-content: center;
+}
+
+.clock-out:hover {
+    background-color: #e8dcc4;
+}
+
+/* Main Content Area */
+.main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #f3efe6; /* Match image */
+}
+
+/* Header */
+.top-header {
+    height: 70px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 0 2rem;
+    border-bottom: 2px solid #e5d9c5;
+    background-color: #f5f0e6;
+}
+
+.order-btn {
+    background-color: #000;
+    color: white;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.order-btn:hover {
+    background-color: #222;
+}
+
+/* Product Grid */
+.product-grid {
+    padding: 2rem;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: min-content;
+    gap: 1.5rem;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+/* Product Card */
+.product-card {
+    background-color: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e5d9c5;
+    padding: 1.5rem 1rem 1rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.product-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.05);
+}
+
+.add-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #482f25; /* Dark brown from image */
+    color: white;
+    border: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+.add-btn:hover {
+    background-color: #311f18;
+}
+
+.product-image {
+    width: 80px;
+    height: 100px; /* Assuming some tall images like cups */
+    object-fit: contain;
+    margin-bottom: 1rem;
+    filter: drop-shadow(0 10px 10px rgba(0,0,0,0.1));
+}
+
+.product-name {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #000;
+    text-align: center;
+    margin-bottom: 0.3rem;
+    min-height: 2.4em; /* For wrapping text */
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.product-price {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 0.9rem;
+    color: #000;
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: #f7f3eb;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 450px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #e5d9c5;
+    padding-bottom: 1rem;
+}
+
+.modal-title {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 1.2rem;
+    color: #000;
+}
+
+.close-modal-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #888;
+    transition: color 0.2s;
+}
+
+.close-modal-btn:hover {
+    color: #000;
+}
+
+.modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.quantity-section, .addons-section, .customer-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.quantity-section h4, .addons-section h4, .customer-section h4 {
+    font-size: 0.9rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.customer-input {
+    width: 100%;
+    padding: 10px 15px;
+    border: 1px solid #d1c0a5;
+    border-radius: 8px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.95rem;
+    background-color: #fff;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.customer-input:focus {
+    border-color: #482f25;
+}
+
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.qty-btn {
+    background-color: #fff;
+    border: 2px solid #e5d9c5;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #000;
+    transition: all 0.2s;
+}
+
+.qty-btn:hover {
+    background-color: #f5f0e6;
+    border-color: #d1c0a5;
+}
+
+.qty-input {
+    width: 50px;
+    text-align: center;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 1.2rem;
+    border: none;
+    background: none;
+}
+
+/* Hide number input spinners */
+.qty-input::-webkit-outer-spin-button,
+.qty-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.addon-item {
+    margin-bottom: 0.5rem;
+}
+
+.addon-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.addon-checkbox {
+    width: 18px;
+    height: 18px;
+    accent-color: #482f25;
+    cursor: pointer;
+}
+
+.modal-footer {
+    margin-top: 2rem;
+}
+
+.add-to-order-btn {
+    width: 100%;
+    background-color: #482f25;
+    color: white;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.2s;
+}
+
+.add-to-order-btn:hover {
+    background-color: #311f18;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .product-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
