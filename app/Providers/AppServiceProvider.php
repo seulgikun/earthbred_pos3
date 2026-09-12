@@ -6,6 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\Transport\ResendTransport;
+use App\Mail\Transport\BrevoTransport;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -39,6 +40,12 @@ class AppServiceProvider extends ServiceProvider
         Mail::extend('resend', function (array $config = []) {
             $apiKey = $config['api_key'] ?? config('services.resend.key', env('RESEND_API_KEY'));
             return new ResendTransport($apiKey);
+        });
+
+        // Register custom Brevo mail transport
+        Mail::extend('brevo', function (array $config = []) {
+            $apiKey = $config['api_key'] ?? config('services.brevo.key', env('BREVO_API_KEY'));
+            return new BrevoTransport($apiKey);
         });
     }
 }

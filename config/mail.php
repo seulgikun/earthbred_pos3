@@ -50,6 +50,11 @@ return [
             'api_key' => env('RESEND_API_KEY'),
         ],
 
+        'brevo' => [
+            'transport' => 'brevo',
+            'api_key' => env('BREVO_API_KEY'),
+        ],
+
         'ses' => [
             'transport' => 'ses',
         ],
