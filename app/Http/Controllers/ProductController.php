@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\AuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
 {
@@ -17,7 +18,7 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'category' => 'required|string|max:255',
             'price' => 'required|numeric',
@@ -25,35 +26,41 @@ class ProductController extends Controller
             'picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $data = $request->except('picture');
-
-        if ($request->hasFile('picture')) {
-            $file = $request->file('picture');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('images'), $filename);
-            $data['picture'] = $filename;
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => $validator->errors()->first()], 422);
         }
 
-        $newProduct = Product::create($data);
+        try {
+            $data = $request->except('picture');
 
-        // Audit Log entry
-        AuditLog::record(
-            'PRODUCT_CREATE',
-            "Added new menu product '{$newProduct->name}' (Category: {$newProduct->category}, Price: ₱" . number_format($newProduct->price, 2) . ")",
-            "Product #{$newProduct->id}: {$newProduct->name}",
-            $request
-        );
+            if ($request->hasFile('picture')) {
+                $file = $request->file('picture');
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $file->move(public_path('images'), $filename);
+                $data['picture'] = $filename;
+            }
 
-        \Illuminate\Support\Facades\Cache::forget('pos_products');
+            $newProduct = Product::create($data);
 
-        return response()->json(['success' => true]);
+            // Audit Log entry
+            AuditLog::record(
+                'PRODUCT_CREATE',
+                "Added new menu product '{$newProduct->name}' (Category: {$newProduct->category}, Price: ₱" . number_format($newProduct->price, 2) . ")",
+                "Product #{$newProduct->id}: {$newProduct->name}",
+                $request
+            );
+
+            \Illuminate\Support\Facades\Cache::forget('pos_products');
+
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Server error: ' . $e->getMessage()], 500);
+        }
     }
 
     public function update(Request $request, $id)
     {
-        $product = Product::findOrFail($id);
-
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'category' => 'required|string|max:255',
             'price' => 'required|numeric',
@@ -61,49 +68,59 @@ class ProductController extends Controller
             'picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $data = $request->except('picture');
-
-        if ($request->hasFile('picture')) {
-            // Delete old picture if needed, but keeping it simple for now
-            $file = $request->file('picture');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('images'), $filename);
-            $data['picture'] = $filename;
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => $validator->errors()->first()], 422);
         }
 
-        $oldPrice = (float)$product->price;
-        $oldDiscounted = $product->discounted_price !== null ? (float)$product->discounted_price : null;
-        $newPrice = (float)$request->price;
-        $newDiscounted = $request->discounted_price !== null && $request->discounted_price !== '' ? (float)$request->discounted_price : null;
+        try {
+            $product = Product::findOrFail($id);
 
-        $product->update($data);
+            $data = $request->except('picture');
 
-        // Track price update changes for Audit Log
-        $changes = [];
-        if ($oldPrice != $newPrice) {
-            $changes[] = "Base price adjusted from ₱" . number_format($oldPrice, 2) . " to ₱" . number_format($newPrice, 2);
+            if ($request->hasFile('picture')) {
+                // Delete old picture if needed, but keeping it simple for now
+                $file = $request->file('picture');
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $file->move(public_path('images'), $filename);
+                $data['picture'] = $filename;
+            }
+
+            $oldPrice = (float)$product->price;
+            $oldDiscounted = $product->discounted_price !== null ? (float)$product->discounted_price : null;
+            $newPrice = (float)$request->price;
+            $newDiscounted = $request->discounted_price !== null && $request->discounted_price !== '' ? (float)$request->discounted_price : null;
+
+            $product->update($data);
+
+            // Track price update changes for Audit Log
+            $changes = [];
+            if ($oldPrice != $newPrice) {
+                $changes[] = "Base price adjusted from ₱" . number_format($oldPrice, 2) . " to ₱" . number_format($newPrice, 2);
+            }
+            if ($oldDiscounted != $newDiscounted) {
+                $oldDiscText = $oldDiscounted !== null ? '₱' . number_format($oldDiscounted, 2) : 'None';
+                $newDiscText = $newDiscounted !== null ? '₱' . number_format($newDiscounted, 2) : 'None';
+                $changes[] = "Discounted price changed from {$oldDiscText} to {$newDiscText}";
+            }
+
+            $action = !empty($changes) ? 'PRICE_UPDATE' : 'PRODUCT_UPDATE';
+            $details = !empty($changes) 
+                ? "Updated pricing for '{$product->name}': " . implode(', ', $changes)
+                : "Updated product details for '{$product->name}' (Category: {$product->category})";
+
+            AuditLog::record(
+                $action,
+                $details,
+                "Product #{$product->id}: {$product->name}",
+                $request
+            );
+
+            \Illuminate\Support\Facades\Cache::forget('pos_products');
+
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Server error: ' . $e->getMessage()], 500);
         }
-        if ($oldDiscounted != $newDiscounted) {
-            $oldDiscText = $oldDiscounted !== null ? '₱' . number_format($oldDiscounted, 2) : 'None';
-            $newDiscText = $newDiscounted !== null ? '₱' . number_format($newDiscounted, 2) : 'None';
-            $changes[] = "Discounted price changed from {$oldDiscText} to {$newDiscText}";
-        }
-
-        $action = !empty($changes) ? 'PRICE_UPDATE' : 'PRODUCT_UPDATE';
-        $details = !empty($changes) 
-            ? "Updated pricing for '{$product->name}': " . implode(', ', $changes)
-            : "Updated product details for '{$product->name}' (Category: {$product->category})";
-
-        AuditLog::record(
-            $action,
-            $details,
-            "Product #{$product->id}: {$product->name}",
-            $request
-        );
-
-        \Illuminate\Support\Facades\Cache::forget('pos_products');
-
-        return response()->json(['success' => true]);
     }
 
     public function destroy(Request $request, $id)
