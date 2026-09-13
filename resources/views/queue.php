@@ -28,35 +28,37 @@
         .orders-grid {
             display: grid !important;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
-            gap: 1.25rem !important;
+            gap: 1.15rem !important;
         }
         .order-card {
             display: flex !important;
             flex-direction: column !important;
             min-width: 0 !important;
+            padding: 1.1rem 0.9rem !important;
             box-sizing: border-box !important;
         }
         .order-footer {
             display: flex !important;
-            flex-direction: column !important;
-            gap: 0.65rem !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            gap: 6px !important;
             width: 100% !important;
             margin-top: auto !important;
-            padding-top: 0.85rem !important;
+            padding-top: 0.65rem !important;
             border-top: 1px solid rgba(220,200,180,0.4) !important;
             box-sizing: border-box !important;
         }
         .order-total-info {
             display: flex !important;
-            justify-content: space-between !important;
-            align-items: center !important;
-            width: 100% !important;
+            flex-direction: column !important;
             font-family: 'Outfit', sans-serif !important;
-            font-size: 0.95rem !important;
-            color: #594a40 !important;
+            font-size: 0.74rem !important;
+            color: #6b5a4e !important;
+            line-height: 1.15 !important;
+            flex-shrink: 0 !important;
         }
         .order-total-info strong {
-            font-size: 1.2rem !important;
+            font-size: 0.96rem !important;
             color: #1c1612 !important;
             font-weight: 800 !important;
             font-family: 'Plus Jakarta Sans', sans-serif !important;
@@ -64,22 +66,28 @@
         }
         .order-actions {
             display: flex !important;
-            gap: 0.5rem !important;
-            width: 100% !important;
+            align-items: center !important;
+            gap: 4px !important;
+            flex-shrink: 0 !important;
         }
         .order-actions .btn-void,
         .order-actions .btn-complete {
-            flex: 1 !important;
-            display: flex !important;
+            flex: initial !important;
+            display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
             text-align: center !important;
-            padding: 0.6rem 0.5rem !important;
-            font-size: 0.82rem !important;
+            padding: 0.32rem 0.55rem !important;
+            font-size: 0.74rem !important;
             font-weight: 700 !important;
             border-radius: 9999px !important;
             white-space: nowrap !important;
             box-sizing: border-box !important;
+            gap: 3px !important;
+        }
+        .order-actions .btn-void i,
+        .order-actions .btn-complete i {
+            font-size: 0.72rem !important;
         }
     </style>
 </head>
