@@ -25,6 +25,62 @@
             width: 100% !important;
             height: 100vh !important;
         }
+        .orders-grid {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+            gap: 1.25rem !important;
+        }
+        .order-card {
+            display: flex !important;
+            flex-direction: column !important;
+            min-width: 0 !important;
+            box-sizing: border-box !important;
+        }
+        .order-footer {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 0.65rem !important;
+            width: 100% !important;
+            margin-top: auto !important;
+            padding-top: 0.85rem !important;
+            border-top: 1px solid rgba(220,200,180,0.4) !important;
+            box-sizing: border-box !important;
+        }
+        .order-total-info {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            width: 100% !important;
+            font-family: 'Outfit', sans-serif !important;
+            font-size: 0.95rem !important;
+            color: #594a40 !important;
+        }
+        .order-total-info strong {
+            font-size: 1.2rem !important;
+            color: #1c1612 !important;
+            font-weight: 800 !important;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            white-space: nowrap !important;
+        }
+        .order-actions {
+            display: flex !important;
+            gap: 0.5rem !important;
+            width: 100% !important;
+        }
+        .order-actions .btn-void,
+        .order-actions .btn-complete {
+            flex: 1 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            text-align: center !important;
+            padding: 0.6rem 0.5rem !important;
+            font-size: 0.82rem !important;
+            font-weight: 700 !important;
+            border-radius: 9999px !important;
+            white-space: nowrap !important;
+            box-sizing: border-box !important;
+        }
     </style>
 </head>
 <body>
