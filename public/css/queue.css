@@ -241,12 +241,16 @@ body {
     border-top: 1px solid rgba(220,200,180,0.4);
     padding-top: 0.85rem;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    gap: 0.65rem;
     margin-top: auto;
 }
 
 .order-total-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
     font-family: 'Outfit', sans-serif;
     font-size: 0.95rem;
     color: #594a40;
@@ -256,57 +260,66 @@ body {
     font-size: 1.15rem;
     color: #1c1612;
     font-weight: 800;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    white-space: nowrap;
 }
 
 .order-actions {
     display: flex;
     gap: 0.5rem;
+    width: 100%;
 }
 
 /* STYLED LIQUID ACTION BUTTONS INSTEAD OF UNSTYLED GRAY HTML BUTTONS */
 .btn-void {
+    flex: 1;
     background: rgba(239, 68, 68, 0.12) !important;
     color: #dc2626 !important;
     border: 1px solid rgba(239, 68, 68, 0.3) !important;
     border-radius: 9999px !important;
-    padding: 0.5rem 1rem !important;
+    padding: 0.55rem 0.75rem !important;
     font-family: 'Outfit', sans-serif !important;
     font-weight: 700 !important;
     font-size: 0.82rem !important;
     cursor: pointer !important;
     display: flex !important;
     align-items: center !important;
+    justify-content: center !important;
     gap: 6px !important;
+    white-space: nowrap !important;
     transition: all 0.22s cubic-bezier(0.34,1.56,0.64,1) !important;
 }
 
 .btn-void:hover {
     background: #dc2626 !important;
     color: #ffffff !important;
-    transform: scale(1.04) !important;
+    transform: scale(1.02) !important;
     box-shadow: 0 6px 18px rgba(220, 38, 38, 0.35) !important;
 }
 
 .btn-complete {
+    flex: 1.2;
     background: rgba(34, 197, 94, 0.12) !important;
     color: #16a34a !important;
     border: 1px solid rgba(34, 197, 94, 0.3) !important;
     border-radius: 9999px !important;
-    padding: 0.5rem 1rem !important;
+    padding: 0.55rem 0.75rem !important;
     font-family: 'Outfit', sans-serif !important;
     font-weight: 700 !important;
     font-size: 0.82rem !important;
     cursor: pointer !important;
     display: flex !important;
     align-items: center !important;
+    justify-content: center !important;
     gap: 6px !important;
+    white-space: nowrap !important;
     transition: all 0.22s cubic-bezier(0.34,1.56,0.64,1) !important;
 }
 
 .btn-complete:hover {
     background: #16a34a !important;
     color: #ffffff !important;
-    transform: scale(1.04) !important;
+    transform: scale(1.02) !important;
     box-shadow: 0 6px 18px rgba(22, 163, 74, 0.35) !important;
 }
 
@@ -330,8 +343,8 @@ body {
     }
 
     .orders-grid {
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
-        gap: 1rem !important;
+        grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)) !important;
+        gap: 1.15rem !important;
     }
 }
 
@@ -342,7 +355,7 @@ body {
     }
 
     .orders-grid {
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
         gap: 1rem !important;
     }
 

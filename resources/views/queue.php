@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Montserrat:wght@400;600;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="<?= asset('css/pos.css') ?>">
-    <link rel="stylesheet" href="<?= asset('css/queue.css') ?>">
+    <link rel="stylesheet" href="<?= asset('css/queue.css') ?>?v=1.1.0">
     <link rel="stylesheet" href="<?= asset('css/pos-modal.css') ?>">
     <link rel="stylesheet" href="<?= asset('css/ios26-theme.css') ?>?v=1.0.0">
     <link rel="icon" type="image/png" href="<?= asset('favicon.png') ?>?v=3.0">
