@@ -241,14 +241,74 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function triggerThermalPrint(orderData, orderId) {
+        const receiptHtml = formatThermalReceipt(orderData, orderId);
+        
+        // Populate standard on-page container
         const receiptContainer = document.getElementById('printableReceipt');
         if (receiptContainer) {
-            receiptContainer.innerHTML = formatThermalReceipt(orderData, orderId);
-            receiptContainer.style.display = 'block';
-            setTimeout(() => {
-                window.print();
-            }, 300);
+            receiptContainer.innerHTML = receiptHtml;
         }
+
+        // Use dedicated hidden print iframe for seamless tablet & mobile printing
+        let printIframe = document.getElementById('thermalPrintIframe');
+        if (!printIframe) {
+            printIframe = document.createElement('iframe');
+            printIframe.id = 'thermalPrintIframe';
+            printIframe.style.position = 'fixed';
+            printIframe.style.right = '0';
+            printIframe.style.bottom = '0';
+            printIframe.style.width = '0';
+            printIframe.style.height = '0';
+            printIframe.style.border = '0';
+            document.body.appendChild(printIframe);
+        }
+
+        const iframeDoc = printIframe.contentDocument || printIframe.contentWindow.document;
+        iframeDoc.open();
+        iframeDoc.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Receipt #${orderId}</title>
+                <style>
+                    @page { size: 80mm auto; margin: 0; }
+                    body {
+                        font-family: 'Courier New', Courier, monospace;
+                        font-size: 12px;
+                        line-height: 1.35;
+                        color: #000;
+                        background: #fff;
+                        margin: 0;
+                        padding: 4mm 6mm;
+                        width: 80mm;
+                        box-sizing: border-box;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+                    * { box-sizing: border-box; }
+                </style>
+            </head>
+            <body>
+                ${receiptHtml}
+            </body>
+            </html>
+        `);
+        iframeDoc.close();
+
+        setTimeout(() => {
+            try {
+                printIframe.contentWindow.focus();
+                printIframe.contentWindow.print();
+            } catch (err) {
+                // Fallback to window.print() if iframe print is restricted
+                if (receiptContainer) {
+                    receiptContainer.style.display = 'block';
+                }
+                window.print();
+            }
+        }, 350);
     }
 
     // =============================================

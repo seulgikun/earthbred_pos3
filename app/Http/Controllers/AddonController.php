@@ -8,9 +8,16 @@ use Illuminate\Support\Facades\Cache;
 
 class AddonController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $addons = Addon::orderBy('name', 'asc')->get();
+        $query = Addon::query();
+        if ($request->has('category') && $request->category) {
+            $cat = strtolower(trim($request->category));
+            $query->where(function($q) use ($cat) {
+                $q->where('category', $cat)->orWhere('category', 'all');
+            });
+        }
+        $addons = $query->orderBy('name', 'asc')->get();
         return response()->json($addons);
     }
 
@@ -19,7 +26,12 @@ class AddonController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
+            'category' => 'nullable|string|in:food,drinks,all',
         ]);
+
+        if (empty($validated['category'])) {
+            $validated['category'] = 'drinks';
+        }
 
         $addon = Addon::create($validated);
         Cache::forget('pos_addons');
@@ -38,7 +50,12 @@ class AddonController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
+            'category' => 'nullable|string|in:food,drinks,all',
         ]);
+
+        if (empty($validated['category'])) {
+            $validated['category'] = $addon->category ?: 'drinks';
+        }
 
         $addon->update($validated);
         Cache::forget('pos_addons');

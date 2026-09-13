@@ -168,17 +168,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
         addonCheckboxes.forEach(cb => {
             const label = cb.closest('.addon-label');
-            if (!isFood && cb.checked) {
+            const item = cb.closest('.addon-item');
+            const itemCat = (cb.getAttribute('data-category') || 'drinks').toLowerCase();
+
+            const isMatch = isFood 
+                ? (itemCat === 'food' || itemCat === 'all')
+                : (itemCat === 'drinks' || itemCat === 'drink' || itemCat === 'all');
+
+            if (isMatch && cb.checked) {
                 addonsTotal += parseFloat(cb.getAttribute('data-price') || 0);
                 if (label) label.classList.add('checked');
             } else {
-                if (isFood) cb.checked = false;
+                if (!isMatch) cb.checked = false;
                 if (label) label.classList.remove('checked');
             }
         });
         
         let qty = parseInt(qtyInput.value) || 1;
-        let finalPrice = (currentBasePrice + (isFood ? 0 : addonsTotal)) * qty;
+        let finalPrice = (currentBasePrice + addonsTotal) * qty;
         modalTotalPrice.innerText = `₱ ${finalPrice.toFixed(2).replace(/\.00$/, '')}`;
     }
 
@@ -196,17 +203,34 @@ document.addEventListener('DOMContentLoaded', () => {
             qtyInput.value = 1;
             customerNameInput.value = '';
             
-            // Reset addons
-            addonCheckboxes.forEach(cb => {
-                cb.checked = false;
-                const label = cb.closest('.addon-label');
-                if (label) label.classList.remove('checked');
+            const isFood = isCurrentProductFood();
+            let visibleAddonsCount = 0;
+
+            // Filter addons based on product category (Food vs Drinks)
+            const addonItems = document.querySelectorAll('.addon-item');
+            addonItems.forEach(item => {
+                const cb = item.querySelector('.addon-checkbox');
+                const itemCat = (item.getAttribute('data-category') || (cb ? cb.getAttribute('data-category') : '') || 'drinks').toLowerCase();
+                const isMatch = isFood 
+                    ? (itemCat === 'food' || itemCat === 'all')
+                    : (itemCat === 'drinks' || itemCat === 'drink' || itemCat === 'all');
+
+                if (isMatch) {
+                    item.style.display = '';
+                    visibleAddonsCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+
+                if (cb) {
+                    cb.checked = false;
+                    const label = cb.closest('.addon-label');
+                    if (label) label.classList.remove('checked');
+                }
             });
 
-            // Remove/hide add-ons for food items
-            const isFood = isCurrentProductFood();
             if (addonsSection) {
-                addonsSection.style.display = isFood ? 'none' : '';
+                addonsSection.style.display = visibleAddonsCount > 0 ? '' : 'none';
             }
             
             updateTotalPrice();
@@ -259,11 +283,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Addon changes update price dynamically
-    addonCheckboxes.forEach(cb => {
-        cb.addEventListener('change', updateTotalPrice);
-    });
-
     // =============================================
     // Add to Cart (instead of redirecting)
     // =============================================
@@ -273,14 +292,17 @@ document.addEventListener('DOMContentLoaded', () => {
             let selectedAddons = [];
             const isFood = isCurrentProductFood();
 
-            if (!isFood) {
-                addonCheckboxes.forEach(cb => {
-                    if (cb.checked) {
-                        addonsTotal += parseFloat(cb.getAttribute('data-price') || 0);
-                        selectedAddons.push(cb.value);
-                    }
-                });
-            }
+            addonCheckboxes.forEach(cb => {
+                const itemCat = (cb.getAttribute('data-category') || 'drinks').toLowerCase();
+                const isMatch = isFood 
+                    ? (itemCat === 'food' || itemCat === 'all')
+                    : (itemCat === 'drinks' || itemCat === 'drink' || itemCat === 'all');
+
+                if (isMatch && cb.checked) {
+                    addonsTotal += parseFloat(cb.getAttribute('data-price') || 0);
+                    selectedAddons.push(cb.value);
+                }
+            });
 
             let qty = parseInt(qtyInput.value);
             let itemTotal = (currentBasePrice + addonsTotal) * qty;
@@ -290,8 +312,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 customer_name: customerNameInput.value.trim() || '',
                 price: currentBasePrice,
                 quantity: qty,
-                addons: isFood ? [] : selectedAddons,
-                addons_total: isFood ? 0 : addonsTotal,
+                addons: selectedAddons,
+                addons_total: addonsTotal,
                 item_total: itemTotal,
                 image: currentProductImage
             };

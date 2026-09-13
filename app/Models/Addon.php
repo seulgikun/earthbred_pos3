@@ -12,6 +12,7 @@ class Addon extends Model
     protected $fillable = [
         'name',
         'price',
+        'category',
     ];
 
     protected $casts = [

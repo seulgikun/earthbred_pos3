@@ -156,19 +156,19 @@
                 </div>
 
                 <div class="addons-section" id="addonsSection">
-                    <h4>Add-ons</h4>
+                    <h4 id="addonsSectionTitle">Add-ons</h4>
                     <?php if(!empty($addons) && count($addons) > 0): ?>
                         <?php foreach($addons as $addon): ?>
-                            <div class="addon-item">
+                            <div class="addon-item" data-category="<?= htmlspecialchars($addon->category ?? 'drinks') ?>">
                                 <label class="addon-label">
-                                    <input type="checkbox" class="addon-checkbox" data-price="<?= (float)$addon->price ?>" value="<?= htmlspecialchars($addon->name) ?>">
+                                    <input type="checkbox" class="addon-checkbox" data-category="<?= htmlspecialchars($addon->category ?? 'drinks') ?>" data-price="<?= (float)$addon->price ?>" value="<?= htmlspecialchars($addon->name) ?>">
                                     <span class="custom-checkbox"></span>
                                     <?= htmlspecialchars($addon->name) ?> <?= $addon->price > 0 ? '(+₱ ' . number_format($addon->price, 0) . ')' : '(Free)' ?>
                                 </label>
                             </div>
                         <?php endforeach; ?>
                     <?php else: ?>
-                        <p style="color:#888; font-size: 0.85rem;">No add-ons available</p>
+                        <p style="color:#888; font-size: 0.85rem;" id="noAddonsMsg">No add-ons available</p>
                     <?php endif; ?>
                 </div>
             </div>
@@ -184,6 +184,6 @@
     
     <script src="<?= asset('js/pos-modal.js') ?>?v=1.1.0"></script>
     <script src="<?= asset('js/clock-out.js') ?>?v=1.1.0"></script>
-    <script src="<?= asset('js/pos.js') ?>?v=1.1.0"></script>
+    <script src="<?= asset('js/pos.js') ?>?v=1.2.0"></script>
 </body>
 </html>

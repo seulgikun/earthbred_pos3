@@ -15,24 +15,43 @@
     <style>
         /* POS Thermal Receipt Print Styling */
         @media print {
-            body * {
+            @page {
+                size: 80mm auto;
+                margin: 0;
+            }
+            html, body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                min-height: auto !important;
+                overflow: visible !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .app-container, .checkout-header, .checkout-grid, .success-overlay, header, nav, aside {
+                display: none !important;
                 visibility: hidden !important;
             }
-            #printableReceipt, #printableReceipt * {
-                visibility: visible !important;
-            }
             #printableReceipt {
-                position: absolute !important;
-                left: 0 !important;
-                top: 0 !important;
-                width: 80mm !important;
-                margin: 0 !important;
-                padding: 5mm !important;
+                display: block !important;
+                visibility: visible !important;
+                position: static !important;
+                width: 100% !important;
+                max-width: 80mm !important;
+                margin: 0 auto !important;
+                padding: 4mm 6mm !important;
                 font-family: 'Courier New', Courier, monospace !important;
                 font-size: 12px !important;
-                color: #000 !important;
-                background: #fff !important;
+                line-height: 1.35 !important;
+                color: #000000 !important;
+                background: #ffffff !important;
                 box-shadow: none !important;
+            }
+            #printableReceipt * {
+                visibility: visible !important;
+                color: #000000 !important;
             }
         }
         .printable-receipt {
@@ -145,6 +164,6 @@
 
     <script src="<?= asset('js/pos-modal.js') ?>?v=1.0.0"></script>
     <script src="<?= asset('js/clock-out.js') ?>?v=1.0.0"></script>
-    <script src="<?= asset('js/checkout.js') ?>?v=1.0.0"></script>
+    <script src="<?= asset('js/checkout.js') ?>?v=1.2.0"></script>
 </body>
 </html>

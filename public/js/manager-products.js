@@ -137,6 +137,7 @@ const addonForm = document.getElementById('addonForm');
 const addonIdInput = document.getElementById('addonId');
 const addonNameInput = document.getElementById('addonName');
 const addonPriceInput = document.getElementById('addonPrice');
+const addonCategoryInput = document.getElementById('addonCategory');
 const addonSubmitText = document.getElementById('addonSubmitText');
 const cancelAddonEditBtn = document.getElementById('cancelAddonEditBtn');
 
@@ -158,6 +159,7 @@ function resetAddonForm() {
     if (addonForm) {
         addonForm.reset();
         addonIdInput.value = '';
+        if (addonCategoryInput) addonCategoryInput.value = 'food';
         addonSubmitText.textContent = 'Add';
         cancelAddonEditBtn.style.display = 'none';
         document.getElementById('saveAddonBtn').innerHTML = '<i class="fa-solid fa-plus"></i> <span id="addonSubmitText">Add</span>';
@@ -185,16 +187,27 @@ function fetchAddons() {
 
                 const priceDisplay = parseFloat(addon.price) > 0 ? `₱ ${parseFloat(addon.price).toFixed(2)}` : '<span style="color:#2e7d32; font-weight:600;">Free</span>';
                 
+                let catBadge = '<span style="display:inline-block; font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:12px; background:#e0f2fe; color:#0369a1; margin-left:6px;">☕ Drinks</span>';
+                if (addon.category === 'food') {
+                    catBadge = '<span style="display:inline-block; font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:12px; background:#fef3c7; color:#b45309; margin-left:6px;">🍲 Food</span>';
+                } else if (addon.category === 'all') {
+                    catBadge = '<span style="display:inline-block; font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:12px; background:#f3f4f6; color:#4b5563; margin-left:6px;">🌐 All</span>';
+                }
+
                 // Safe JSON payload for inline edit
                 const safeName = addon.name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const safeCat = addon.category || 'drinks';
 
                 div.innerHTML = `
                     <div style="flex:1;">
-                        <strong style="color:#2c1a14; font-family:'Montserrat',sans-serif;">${addon.name}</strong>
-                        <div style="font-size:0.85rem; color:#8d786c; font-family:'Poppins',sans-serif;">${priceDisplay}</div>
+                        <div style="display:flex; align-items:center; gap:4px;">
+                            <strong style="color:#2c1a14; font-family:'Montserrat',sans-serif;">${addon.name}</strong>
+                            ${catBadge}
+                        </div>
+                        <div style="font-size:0.85rem; color:#8d786c; font-family:'Poppins',sans-serif; margin-top:2px;">${priceDisplay}</div>
                     </div>
                     <div style="display:flex; gap:8px;">
-                        <button type="button" onclick="editAddon(${addon.id}, '${safeName}', ${addon.price})" title="Edit Add-on" style="background:#eadeca; color:#2c1a14; border:none; border-radius:6px; padding:6px 10px; cursor:pointer; font-size:0.85rem; transition:0.2s;">
+                        <button type="button" onclick="editAddon(${addon.id}, '${safeName}', ${addon.price}, '${safeCat}')" title="Edit Add-on" style="background:#eadeca; color:#2c1a14; border:none; border-radius:6px; padding:6px 10px; cursor:pointer; font-size:0.85rem; transition:0.2s;">
                             <i class="fa-solid fa-pen-to-square"></i>
                         </button>
                         <button type="button" onclick="deleteAddon(${addon.id}, '${safeName}')" title="Deduct/Delete Add-on" style="background:#fce8e6; color:#c5221f; border:none; border-radius:6px; padding:6px 10px; cursor:pointer; font-size:0.85rem; transition:0.2s;">
@@ -211,10 +224,11 @@ function fetchAddons() {
         });
 }
 
-function editAddon(id, name, price) {
+function editAddon(id, name, price, category) {
     addonIdInput.value = id;
     addonNameInput.value = name;
     addonPriceInput.value = price;
+    if (addonCategoryInput) addonCategoryInput.value = category || 'drinks';
     cancelAddonEditBtn.style.display = 'inline-block';
     document.getElementById('saveAddonBtn').innerHTML = '<i class="fa-solid fa-check"></i> <span id="addonSubmitText">Update</span>';
     addonNameInput.focus();
@@ -226,6 +240,7 @@ if (addonForm) {
         const id = addonIdInput.value;
         const name = addonNameInput.value.trim();
         const price = parseFloat(addonPriceInput.value) || 0;
+        const category = addonCategoryInput ? addonCategoryInput.value : 'drinks';
 
         const url = id ? (BASE + '/api/addons/' + id) : (BASE + '/api/addons');
 
@@ -236,7 +251,7 @@ if (addonForm) {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({ name, price })
+            body: JSON.stringify({ name, price, category })
         })
         .then(res => res.json())
         .then(data => {

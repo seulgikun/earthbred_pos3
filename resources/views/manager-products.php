@@ -226,8 +226,13 @@
             <div class="modal-body">
                 <form id="addonForm" style="display:flex; gap:10px; margin-bottom: 20px; align-items: center; flex-wrap: wrap;">
                     <input type="hidden" id="addonId" value="">
-                    <input type="text" id="addonName" placeholder="Add-on Name (e.g. Oat Milk)" required style="flex:2; min-width: 150px; padding:10px; border:1px solid #ccc; border-radius:6px; font-family:'Poppins',sans-serif; font-size:0.9rem;">
-                    <div style="position: relative; flex:1; min-width: 110px;">
+                    <input type="text" id="addonName" placeholder="Add-on Name (e.g. Extra Rice)" required style="flex:2; min-width: 140px; padding:10px; border:1px solid #ccc; border-radius:6px; font-family:'Poppins',sans-serif; font-size:0.9rem;">
+                    <select id="addonCategory" required style="flex:1.2; min-width: 120px; padding:10px; border:1px solid #ccc; border-radius:6px; font-family:'Poppins',sans-serif; font-size:0.9rem; background:#fff;">
+                        <option value="food">🍲 Food</option>
+                        <option value="drinks" selected>☕ Drinks / Coffee</option>
+                        <option value="all">🌐 All Categories</option>
+                    </select>
+                    <div style="position: relative; flex:1; min-width: 90px;">
                         <span style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #888; font-weight: 600; font-size:0.9rem;">₱</span>
                         <input type="number" step="0.01" min="0" id="addonPrice" placeholder="0.00" required style="width: 100%; padding:10px 10px 10px 24px; border:1px solid #ccc; border-radius:6px; font-family:'Poppins',sans-serif; font-size:0.9rem; box-sizing: border-box;">
                     </div>
@@ -300,6 +305,6 @@
     </div>
     <script src="<?= asset('js/pos-modal.js') ?>?v=1.1.0"></script>
     <script src="<?= asset('js/clock-out.js') ?>?v=1.1.0"></script>
-    <script src="<?= asset('js/manager-products.js') ?>?v=1.1.0"></script>
+    <script src="<?= asset('js/manager-products.js') ?>?v=1.2.0"></script>
 </body>
 </html>
