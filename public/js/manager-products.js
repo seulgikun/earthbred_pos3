@@ -57,17 +57,7 @@ if (form) {
             },
             body: formData
         })
-        .then(async response => {
-            const rawText = await response.text();
-            console.log('[DEBUG] HTTP Status:', response.status);
-            console.log('[DEBUG] Raw response:', rawText);
-            try {
-                return JSON.parse(rawText);
-            } catch (e) {
-                // Show first 300 chars of the HTML so we know what the server returned
-                throw new Error('Server returned non-JSON (HTTP ' + response.status + '): ' + rawText.substring(0, 300));
-            }
-        })
+        .then(response => response.json())
         .then(data => {
             if (data.success) {
                 window.location.reload();
@@ -84,7 +74,7 @@ if (form) {
             console.error('Error:', error);
             PosDialog.alert({
                 title: 'Server Error',
-                message: error.message || 'An error occurred while saving the product.',
+                message: 'An error occurred while saving the product.',
                 icon: 'fa-circle-xmark',
                 iconType: 'danger'
             });
