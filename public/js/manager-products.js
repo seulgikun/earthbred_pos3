@@ -40,6 +40,34 @@ if (form) {
         
         const formData = new FormData(this);
         const id = document.getElementById('productId').value;
+
+        // Client-side image validation
+        const pictureInput = document.getElementById('productPicture');
+        if (pictureInput && pictureInput.files.length > 0) {
+            const file = pictureInput.files[0];
+            const maxSize = 2 * 1024 * 1024; // 2MB
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
+
+            if (!allowedTypes.includes(file.type)) {
+                PosDialog.alert({
+                    title: 'Invalid Image Type',
+                    message: 'Only JPEG, PNG, JPG, and GIF images are allowed.',
+                    icon: 'fa-image',
+                    iconType: 'warning'
+                });
+                return;
+            }
+
+            if (file.size > maxSize) {
+                PosDialog.alert({
+                    title: 'Image Too Large',
+                    message: 'Image must be smaller than 2MB. Current size: ' + (file.size / (1024 * 1024)).toFixed(2) + 'MB. Please compress or resize the image.',
+                    icon: 'fa-image',
+                    iconType: 'warning'
+                });
+                return;
+            }
+        }
         
         let url = BASE + '/api/products';
         if (id) {

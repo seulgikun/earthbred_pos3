@@ -305,6 +305,6 @@
     </div>
     <script src="<?= asset('js/pos-modal.js') ?>?v=1.1.0"></script>
     <script src="<?= asset('js/clock-out.js') ?>?v=1.1.0"></script>
-    <script src="<?= asset('js/manager-products.js') ?>?v=1.3.0"></script>
+    <script src="<?= asset('js/manager-products.js') ?>?v=1.4.0"></script>
 </body>
 </html>
