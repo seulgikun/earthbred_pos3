@@ -50,6 +50,7 @@ if (form) {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json',
                 'X-User-Id': localStorage.getItem('userId') || '',
                 'X-User-Name': localStorage.getItem('userName') || '',
                 'X-User-Role': localStorage.getItem('userRole') || ''
