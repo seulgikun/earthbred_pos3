@@ -186,15 +186,19 @@ window.PosDialog = (function() {
         const userName = localStorage.getItem('userName');
         const userRole = localStorage.getItem('userRole');
         const userId = localStorage.getItem('userId');
+        const tokenMeta = document.querySelector('meta[name="csrf-token"]');
+        const csrfToken = tokenMeta ? tokenMeta.getAttribute('content') : '';
 
         if (config.headers instanceof Headers) {
             if (userName && !config.headers.has('X-User-Name')) config.headers.append('X-User-Name', userName);
             if (userRole && !config.headers.has('X-User-Role')) config.headers.append('X-User-Role', userRole);
             if (userId && !config.headers.has('X-User-Id')) config.headers.append('X-User-Id', userId);
+            if (csrfToken && !config.headers.has('X-CSRF-TOKEN')) config.headers.append('X-CSRF-TOKEN', csrfToken);
         } else if (typeof config.headers === 'object') {
             if (userName && !config.headers['X-User-Name']) config.headers['X-User-Name'] = userName;
             if (userRole && !config.headers['X-User-Role']) config.headers['X-User-Role'] = userRole;
             if (userId && !config.headers['X-User-Id']) config.headers['X-User-Id'] = userId;
+            if (csrfToken && !config.headers['X-CSRF-TOKEN']) config.headers['X-CSRF-TOKEN'] = csrfToken;
         }
 
         return _origFetch.call(this, resource, config);

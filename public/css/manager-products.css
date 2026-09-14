@@ -266,3 +266,93 @@
     }
 }
 
+/* Category Filter Pills */
+.mgr-filter-pill {
+    background: #fdfaf6;
+    border: 1px solid #eadeca;
+    color: #8d786c;
+    padding: 6px 12px;
+    border-radius: 9999px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.mgr-filter-pill:hover {
+    background: #eadeca;
+    color: #2c1a14;
+}
+
+.mgr-filter-pill.active {
+    background: #3d271d;
+    color: #fff;
+    border-color: #3d271d;
+    box-shadow: 0 2px 6px rgba(45, 26, 17, 0.2);
+}
+
+/* Manager Products Pagination */
+.mgr-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 1.25rem 0;
+    user-select: none;
+    flex-wrap: wrap;
+}
+
+.mgr-pagination .pagination-btn {
+    background: #ffffff;
+    border: 1.5px solid #eadeca;
+    color: #4a3728;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 6px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.04);
+}
+
+.mgr-pagination .pagination-btn:hover:not(:disabled) {
+    background: #c59958;
+    color: #ffffff;
+    border-color: #c59958;
+    transform: translateY(-1px);
+}
+
+.mgr-pagination .pagination-btn.active {
+    background: #3d271d;
+    color: #ffffff;
+    border-color: #3d271d;
+    box-shadow: 0 2px 8px rgba(45, 26, 17, 0.25);
+}
+
+.mgr-pagination .pagination-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: #f9f6f0;
+    border-color: #eadeca;
+}
+
+.mgr-pagination .pagination-info {
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.82rem;
+    color: #8d786c;
+    font-weight: 600;
+    margin: 0 10px;
+    background: #f9f6f0;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid #eadeca;
+}
+
+
+

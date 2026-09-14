@@ -1,4 +1,10 @@
 // manager-ai.js
+// Chat history is persisted in sessionStorage so navigating away and back
+// keeps the conversation intact for the duration of the browser session.
+// Each role (owner, manager, etc.) gets its own isolated history key.
+
+const _role = (localStorage.getItem('userRole') || 'manager').toLowerCase().trim();
+const CHAT_STORAGE_KEY = `earthbred_ai_chat_history_${_role}`;
 
 document.addEventListener('DOMContentLoaded', () => {
     const BASE = (function() {
@@ -6,12 +12,37 @@ document.addEventListener('DOMContentLoaded', () => {
         const idx = pathname.toLowerCase().indexOf('/backend/public');
         return idx !== -1 ? pathname.substring(0, idx + '/backend/public'.length) : '';
     })();
-    const chatForm = document.getElementById('chatForm');
-    const chatInput = document.getElementById('chatInput');
+    const chatForm   = document.getElementById('chatForm');
+    const chatInput  = document.getElementById('chatInput');
     const chatWindow = document.getElementById('chatWindow');
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    const csrfMeta   = document.querySelector('meta[name="csrf-token"]');
+    const csrfToken  = csrfMeta ? csrfMeta.getAttribute('content') : '';
 
-    function appendMessage(text, isUser) {
+    // ─── History helpers ─────────────────────────────────────────────────────
+
+    function loadHistory() {
+        try {
+            return JSON.parse(sessionStorage.getItem(CHAT_STORAGE_KEY)) || [];
+        } catch (_) {
+            return [];
+        }
+    }
+
+    function saveHistory(history) {
+        try {
+            sessionStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(history));
+        } catch (_) { /* storage full – silently skip */ }
+    }
+
+    function addToHistory(text, isUser) {
+        const history = loadHistory();
+        history.push({ text, isUser, ts: Date.now() });
+        saveHistory(history);
+    }
+
+    // ─── Rendering ───────────────────────────────────────────────────────────
+
+    function appendMessage(text, isUser, skipSave) {
         const wrapper = document.createElement('div');
         wrapper.className = `chat-message ${isUser ? 'user-message' : 'bot-message'}`;
 
@@ -21,11 +52,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const bubble = document.createElement('div');
         bubble.className = `message-bubble ${isUser ? 'user-bubble' : 'bot-bubble'}`;
-        
+
         if (isUser) {
             bubble.textContent = text;
         } else {
-            // Use marked.js if available
             if (typeof marked !== 'undefined') {
                 bubble.innerHTML = marked.parse(text);
             } else {
@@ -36,9 +66,11 @@ document.addEventListener('DOMContentLoaded', () => {
         wrapper.appendChild(avatar);
         wrapper.appendChild(bubble);
         chatWindow.appendChild(wrapper);
-
-        // Scroll to bottom
         chatWindow.scrollTop = chatWindow.scrollHeight;
+
+        if (!skipSave) {
+            addToHistory(text, isUser);
+        }
     }
 
     function addLoadingBubble() {
@@ -61,32 +93,58 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function removeLoadingBubble() {
-        const loadingBubble = document.getElementById('loadingBubble');
-        if (loadingBubble) {
-            loadingBubble.remove();
-        }
+        const el = document.getElementById('loadingBubble');
+        if (el) el.remove();
     }
+
+    // ─── Restore history on load ─────────────────────────────────────────────
+
+    function restoreHistory() {
+        const history = loadHistory();
+        if (history.length === 0) return;
+
+        // Remove the default welcome bubble before restoring so we don't
+        // duplicate it when there is already a saved conversation.
+        const defaultBubble = chatWindow.querySelector('.bot-message');
+        if (defaultBubble) defaultBubble.remove();
+
+        history.forEach(({ text, isUser }) => {
+            appendMessage(text, isUser, /* skipSave */ true);
+        });
+    }
+
+    restoreHistory();
+
+    // ─── Clear chat button ───────────────────────────────────────────────────
+
+    const clearBtn = document.getElementById('clearChatBtn');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            sessionStorage.removeItem(CHAT_STORAGE_KEY);
+            // Reload page to show the fresh welcome message
+            window.location.reload();
+        });
+    }
+
+    // ─── Send message ────────────────────────────────────────────────────────
 
     chatForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const message = chatInput.value.trim();
         if (!message) return;
 
-        // Append user message
         appendMessage(message, true);
         chatInput.value = '';
 
-        // Add loading indicator
         addLoadingBubble();
 
-        // Call API
         fetch(BASE + '/api/manager/ai/chat', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': csrfToken
             },
-            body: JSON.stringify({ message: message })
+            body: JSON.stringify({ message })
         })
         .then(res => res.json())
         .then(data => {
@@ -97,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 appendMessage(data.message || 'Error communicating with AI.', false);
             }
         })
-        .catch(err => {
+        .catch(() => {
             removeLoadingBubble();
             appendMessage('A network error occurred. Please try again.', false);
         });

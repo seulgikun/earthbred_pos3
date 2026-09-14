@@ -40,9 +40,9 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             ProductSeeder::class,
+            AddonSeeder::class,
             DiscountSeeder::class,
             InventorySeeder::class,
-            OrderSampleSeeder::class,
         ]);
 
         \App\Models\ShiftNote::create([

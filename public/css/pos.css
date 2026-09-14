@@ -265,6 +265,53 @@ body {
     box-shadow: 0 24px 50px -12px rgba(44, 30, 20, 0.16) !important;
 }
 
+/* Out of Stock Card State */
+.product-card.is-out-of-stock {
+    background: #e5e7eb !important;
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+    border-color: #d1d5db !important;
+    transform: none !important;
+}
+
+.product-card.is-out-of-stock:hover {
+    transform: none !important;
+    background: #e5e7eb !important;
+    box-shadow: none !important;
+}
+
+.product-card.is-out-of-stock .product-image {
+    filter: grayscale(100%) opacity(0.7) !important;
+}
+
+.product-card.is-out-of-stock .product-name {
+    color: #6b7280 !important;
+}
+
+.product-card.is-out-of-stock .product-price {
+    color: #9ca3af !important;
+}
+
+.out-of-stock-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: #ef4444 !important;
+    color: #ffffff !important;
+    font-family: 'Outfit', sans-serif !important;
+    font-size: 0.72rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.5px;
+    padding: 4px 9px !important;
+    border-radius: 9999px !important;
+    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.35) !important;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    z-index: 2;
+}
+
 .add-btn {
     position: absolute;
     top: 12px;
@@ -649,3 +696,94 @@ body {
         padding: 1.25rem !important;
     }
 }
+
+/* ==========================================================================
+   POS & Manager Pagination & Typed Quantity Input
+   ========================================================================== */
+.pos-pagination, .mgr-pagination {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    padding: 1rem 1.5rem 1.5rem !important;
+    user-select: none !important;
+    flex-wrap: wrap !important;
+}
+
+.pagination-btn {
+    background: rgba(255, 255, 255, 0.92) !important;
+    border: 1.5px solid rgba(210, 195, 180, 0.55) !important;
+    color: #4a3728 !important;
+    font-family: 'Outfit', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 0.86rem !important;
+    padding: 7px 14px !important;
+    border-radius: 12px !important;
+    cursor: pointer !important;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 38px !important;
+    box-shadow: 0 2px 8px rgba(44, 30, 20, 0.05) !important;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: #c59958 !important;
+    color: #ffffff !important;
+    border-color: #c59958 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(197, 153, 88, 0.3) !important;
+}
+
+.pagination-btn.active {
+    background: linear-gradient(135deg, #533524 0%, #3d271d 60%, #26160e 100%) !important;
+    color: #ffffff !important;
+    border-color: #26160e !important;
+    box-shadow: 0 4px 14px rgba(45, 26, 17, 0.35) !important;
+    transform: translateY(-1px) !important;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.38 !important;
+    cursor: not-allowed !important;
+    background: rgba(240, 235, 228, 0.6) !important;
+    border-color: rgba(210, 195, 180, 0.35) !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.pagination-info {
+    font-family: 'Outfit', sans-serif !important;
+    font-size: 0.82rem !important;
+    color: #8d786c !important;
+    font-weight: 700 !important;
+    margin: 0 10px !important;
+    background: rgba(255, 255, 255, 0.7) !important;
+    padding: 5px 12px !important;
+    border-radius: 9999px !important;
+    border: 1px solid rgba(210, 195, 180, 0.4) !important;
+}
+
+.qty-type-input {
+    width: 100% !important;
+    padding: 0.85rem 1.1rem !important;
+    border: 1.5px solid rgba(210,195,180,0.5) !important;
+    border-radius: 16px !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: 1.15rem !important;
+    font-weight: 800 !important;
+    background: rgba(255,255,255,0.88) !important;
+    outline: none !important;
+    color: #1c1612 !important;
+    transition: all 0.2s ease !important;
+    box-sizing: border-box !important;
+    text-align: center !important;
+}
+
+.qty-type-input:focus {
+    background: #ffffff !important;
+    border-color: #d97706 !important;
+    box-shadow: 0 0 0 4px rgba(217,119,6,0.16) !important;
+}
+

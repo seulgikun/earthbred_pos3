@@ -112,9 +112,15 @@
             <!-- Product Grid -->
             <div class="product-grid">
                 
-                <?php foreach($products as $product): ?>
-                <div class="product-card" data-category="<?= htmlspecialchars($product->category) ?>" data-id="<?= $product->id ?>" data-price="<?= $product->discounted_price ? $product->discounted_price : $product->price ?>">
-                    <button class="add-btn"><i class="fa-solid fa-plus"></i></button>
+                <?php foreach($products as $product): 
+                    $outOfStock = $product->isOutOfStock($inventories ?? null);
+                ?>
+                <div class="product-card <?= $outOfStock ? 'is-out-of-stock' : '' ?>" data-category="<?= htmlspecialchars($product->category) ?>" data-id="<?= $product->id ?>" data-price="<?= $product->discounted_price ? $product->discounted_price : $product->price ?>" data-out-of-stock="<?= $outOfStock ? 'true' : 'false' ?>">
+                    <?php if($outOfStock): ?>
+                        <div class="out-of-stock-badge"><i class="fa-solid fa-ban"></i> OUT OF STOCK</div>
+                    <?php else: ?>
+                        <button class="add-btn"><i class="fa-solid fa-plus"></i></button>
+                    <?php endif; ?>
                     <img src="<?= asset('images/' . $product->picture) ?>" alt="<?= htmlspecialchars($product->name) ?>" class="product-image">
                     <h4 class="product-name"><?= htmlspecialchars($product->name) ?></h4>
                     <?php if($product->discounted_price): ?>
@@ -129,6 +135,9 @@
                 <?php endforeach; ?>
 
             </div>
+
+            <!-- POS Product Pagination -->
+            <div class="pos-pagination" id="posPagination"></div>
 
         </main>
     </div>
@@ -148,10 +157,8 @@
 
                 <div class="quantity-section">
                     <h4>Quantity</h4>
-                    <div class="quantity-controls">
-                        <button class="qty-btn" id="qtyMinus"><i class="fa-solid fa-minus"></i></button>
-                        <input type="number" class="qty-input" id="qtyInput" value="1" min="1" readonly>
-                        <button class="qty-btn" id="qtyPlus"><i class="fa-solid fa-plus"></i></button>
+                    <div class="quantity-type-wrap">
+                        <input type="number" class="customer-input qty-type-input" id="qtyInput" value="1" min="1" step="1" inputmode="numeric" placeholder="Enter quantity (e.g. 1, 2, 5)">
                     </div>
                 </div>
 
@@ -184,6 +191,6 @@
     
     <script src="<?= asset('js/pos-modal.js') ?>?v=1.1.0"></script>
     <script src="<?= asset('js/clock-out.js') ?>?v=1.1.0"></script>
-    <script src="<?= asset('js/pos.js') ?>?v=1.2.0"></script>
+    <script src="<?= asset('js/pos.js') ?>?v=1.3.0"></script>
 </body>
 </html>

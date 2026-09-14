@@ -259,18 +259,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td><span class="inv-issue-tag">${item.latest_issue_type || '—'}</span></td>
                 <td>
                     <div class="inv-actions-cell">
-                        <button class="inv-action-btn inv-add-stock-btn"
-                            data-id="${item.id}" data-name="${item.item_name}">
-                            <i class="fa-solid fa-plus"></i> Add Stock
-                        </button>
                         <button class="inv-action-btn inv-edit-stock-btn"
                             data-id="${item.id}" data-name="${item.item_name}"
                             data-qty="${item.quantity}" data-issue="${item.latest_issue_type || 'Morning Check'}">
                             <i class="fa-solid fa-pen-to-square"></i> Edit
                         </button>
-                        <button class="inv-action-btn inv-delete-stock-btn" style="background-color: #c5221f; color: white;"
+                        <button class="inv-action-btn inv-archive-stock-btn" style="background-color: #6a3a30; color: white;"
                             data-id="${item.id}" data-name="${item.item_name}">
-                            <i class="fa-solid fa-trash"></i> Delete
+                            <i class="fa-solid fa-box-archive"></i> Archive
                         </button>
                     </div>
                 </td>
@@ -287,11 +283,24 @@ document.addEventListener('DOMContentLoaded', () => {
     let allItems = [];
 
     function loadInventoryData() {
-        fetch(`${BASE}/api/inventory`)
-            .then(r => r.json())
+        fetch(`${BASE}/api/inventory`, {
+            headers: getAuthHeaders()
+        })
+            .then(r => {
+                if (r.status === 401) {
+                    window.location.href = BASE + '/login';
+                    return null;
+                }
+                return r.json();
+            })
             .then(items => {
-                allItems = items;
-                renderFullDashboard(items);
+                if (!items) return;
+                if (Array.isArray(items)) {
+                    allItems = items;
+                    renderFullDashboard(items);
+                } else if (items.message) {
+                    showToast(items.message, '#c5221f');
+                }
             })
             .catch(err => {
                 console.error('Inventory fetch error:', err);
@@ -345,16 +354,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // BIND TABLE ACTION BUTTONS
     // =========================================================
     function bindTableButtons() {
-        document.querySelectorAll('.inv-add-stock-btn').forEach(btn => {
-            btn.addEventListener('click', e => {
-                e.stopPropagation();
-                document.getElementById('addStockId').value       = btn.dataset.id;
-                document.getElementById('addStockItemName').value = btn.dataset.name;
-                document.getElementById('addStockQty').value      = '';
-                openModal('addStockModal');
-            });
-        });
-
         document.querySelectorAll('.inv-edit-stock-btn').forEach(btn => {
             btn.addEventListener('click', e => {
                 e.stopPropagation();
@@ -367,20 +366,20 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        document.querySelectorAll('.inv-delete-stock-btn').forEach(btn => {
+        document.querySelectorAll('.inv-archive-stock-btn').forEach(btn => {
             btn.addEventListener('click', async e => {
                 e.stopPropagation();
                 const id = btn.dataset.id;
                 const name = btn.dataset.name;
                 
                 const confirmed = await PosDialog.confirm({
-                    title: 'Delete Inventory Item',
-                    message: `Are you sure you want to delete "${name}" from inventory? This action cannot be undone.`,
-                    icon: 'fa-trash-can',
-                    iconType: 'danger',
-                    confirmText: 'Delete Item',
+                    title: 'Archive Inventory Item',
+                    message: `Are you sure you want to archive "${name}"? It will be moved to the archive where you can restore it anytime.`,
+                    icon: 'fa-box-archive',
+                    iconType: 'warning',
+                    confirmText: 'Archive Item',
                     cancelText: 'Cancel',
-                    confirmType: 'confirm-danger'
+                    confirmType: 'confirm-warning'
                 });
 
                 if (confirmed) {
@@ -391,10 +390,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     .then(r => r.json())
                     .then(data => {
                         if (data.success) {
-                            showToast(`"${name}" deleted successfully! ✓`, '#137333');
+                            showToast(`"${name}" moved to archive! ✓`, '#137333');
                             loadInventoryData();
                         } else {
-                            showToast(data.message || 'Error deleting item.', '#c5221f');
+                            showToast(data.message || 'Error archiving item.', '#c5221f');
                         }
                     })
                     .catch(() => showToast('Server error. Please try again.', '#c5221f'));
@@ -404,26 +403,137 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // =========================================================
+    // ARCHIVE MODAL LOGIC
+    // =========================================================
+    const viewArchiveBtn = document.getElementById('viewArchiveBtn');
+    const closeArchiveModalBtn = document.getElementById('closeArchiveModalBtn');
+
+    if (viewArchiveBtn) {
+        viewArchiveBtn.addEventListener('click', () => {
+            loadArchivedItems();
+            openModal('archiveModal');
+        });
+    }
+
+    if (closeArchiveModalBtn) {
+        closeArchiveModalBtn.addEventListener('click', () => {
+            closeModal('archiveModal');
+        });
+    }
+
+    function loadArchivedItems() {
+        const tbody = document.getElementById('archivedTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 20px; color: #888;"><i class="fa-solid fa-spinner fa-spin"></i> Loading archived items...</td></tr>';
+
+        fetch(`${BASE}/api/inventory/archived`, {
+            headers: getAuthHeaders()
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success && data.items) {
+                renderArchivedTable(data.items);
+            } else {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 20px; color: #c5221f;">Failed to load archived items.</td></tr>';
+            }
+        })
+        .catch(() => {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 20px; color: #c5221f;">Server error loading archived items.</td></tr>';
+        });
+    }
+
+    function renderArchivedTable(items) {
+        const tbody = document.getElementById('archivedTableBody');
+        if (!tbody) return;
+
+        if (items.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 25px; color: #888;">No archived items found.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = '';
+        items.forEach(item => {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid #eee';
+
+            const delDate = new Date(item.deleted_at);
+            const dateStr = delDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+            tr.innerHTML = `
+                <td style="padding: 10px 8px; font-weight: 600; color: #2c1a14;">${item.item_name}</td>
+                <td style="padding: 10px 8px;"><span class="inv-category-tag">${item.category}</span></td>
+                <td style="padding: 10px 8px; font-size: 0.85rem; color: #666;">${dateStr}</td>
+                <td style="padding: 10px 8px; text-align: center;">
+                    <button class="inv-action-btn" onclick="restoreArchivedItem(${item.id}, '${item.item_name.replace(/'/g, "\\'")}')" style="background: #137333; color: #fff; padding: 5px 12px; font-size: 0.8rem; border-radius: 6px; border: none; cursor: pointer;">
+                        <i class="fa-solid fa-rotate-left"></i> Restore
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    window.restoreArchivedItem = async function(id, name) {
+        const confirmed = await PosDialog.confirm({
+            title: 'Restore Inventory Item',
+            message: `Do you want to restore "${name}" back to the active inventory?`,
+            icon: 'fa-rotate-left',
+            iconType: 'info',
+            confirmText: 'Restore Item',
+            cancelText: 'Cancel',
+            confirmType: 'confirm-primary'
+        });
+
+        if (!confirmed) return;
+
+        fetch(`${BASE}/api/inventory/${id}/restore`, {
+            method: 'POST',
+            headers: getAuthHeaders()
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                showToast(`"${name}" restored to inventory! ✓`, '#137333');
+                loadArchivedItems();
+                loadInventoryData();
+            } else {
+                showToast(data.message || 'Error restoring item.', '#c5221f');
+            }
+        })
+        .catch(() => showToast('Server error. Please try again.', '#c5221f'));
+    };
+
+    // =========================================================
     // MODAL HELPERS
     // =========================================================
     function openModal(id) {
-        document.getElementById(id).style.display = 'flex';
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'flex';
     }
 
     function closeModal(id) {
-        document.getElementById(id).style.display = 'none';
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
     }
 
     // Close buttons
-    document.getElementById('closeAddStockModal') .addEventListener('click', () => closeModal('addStockModal'));
-    document.getElementById('closeEditStockModal').addEventListener('click', () => closeModal('editStockModal'));
-    document.getElementById('closeAddItemModal')  .addEventListener('click', () => closeModal('addItemModal'));
+    const closeAddStock = document.getElementById('closeAddStockModal');
+    if (closeAddStock) closeAddStock.addEventListener('click', () => closeModal('addStockModal'));
+
+    const closeEditStock = document.getElementById('closeEditStockModal');
+    if (closeEditStock) closeEditStock.addEventListener('click', () => closeModal('editStockModal'));
+
+    const closeAddItem = document.getElementById('closeAddItemModal');
+    if (closeAddItem) closeAddItem.addEventListener('click', () => closeModal('addItemModal'));
 
     // Click outside to close
-    ['addStockModal','editStockModal','addItemModal'].forEach(id => {
-        document.getElementById(id).addEventListener('click', e => {
-            if (e.target.id === id) closeModal(id);
-        });
+    ['addStockModal','editStockModal','addItemModal','archiveModal'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('click', e => {
+                if (e.target.id === id) closeModal(id);
+            });
+        }
     });
 
     // Add Item Button

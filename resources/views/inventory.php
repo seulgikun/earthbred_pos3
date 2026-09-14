@@ -153,7 +153,7 @@
                 </nav>
 
                 <div class="mgr-sidebar-footer">
-                    <div class="mgr-clock-out" onclick="window.location.href='<?= url('') ?>/login'">
+                    <div class="mgr-clock-out">
                         <i class="fa-solid fa-power-off"></i> Clock Out
                     </div>
                 </div>
@@ -254,6 +254,9 @@
                     </div>
                 </div>
                 <div class="inv-header-actions">
+                    <button class="inv-btn inv-btn-secondary" id="viewArchiveBtn" style="background:#533524; color:#fff;">
+                        <i class="fa-solid fa-box-archive"></i> Archived Items
+                    </button>
                     <button class="inv-btn inv-btn-secondary" id="addItemBtn">
                         <i class="fa-solid fa-plus"></i> Add Item
                     </button>
@@ -566,9 +569,35 @@
         </div>
     </div>
 
+    <!-- Archive Modal -->
+    <div class="modal-overlay" id="archiveModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div class="modal-content" style="background: #fff; border-radius: 12px; padding: 24px; max-width: 650px; width: 90%; max-height: 80vh; display: flex; flex-direction: column;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 12px; margin-bottom: 16px;">
+                <h3 class="modal-title" style="margin: 0; font-family: 'Montserrat', sans-serif; color: #2c1a14;"><i class="fa-solid fa-box-archive" style="color: #6a3a30;"></i> Archived Inventory Items</h3>
+                <button class="close-modal-btn" id="closeArchiveModalBtn" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #888;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p style="font-size: 0.85rem; color: #666; margin-top: 0;">Items that were soft-deleted or archived. Click <strong>Restore</strong> to return an item to active inventory.</p>
+            <div style="flex: 1; overflow-y: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid #eee; text-align: left;">
+                            <th style="padding: 8px;">ITEM NAME</th>
+                            <th style="padding: 8px;">CATEGORY</th>
+                            <th style="padding: 8px;">ARCHIVED AT</th>
+                            <th style="padding: 8px; text-align: center;">ACTION</th>
+                        </tr>
+                    </thead>
+                    <tbody id="archivedTableBody">
+                        <tr><td colspan="4" style="text-align: center; padding: 20px; color: #888;">Loading archived items...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <script src="<?= asset('js/pos-modal.js') ?>?v=1.0.0"></script>
     <script src="<?= asset('js/clock-out.js') ?>?v=1.0.0"></script>
-    <script src="<?= asset('js/inventory.js') ?>?v=1.0.0"></script>
+    <script src="<?= asset('js/inventory.js') ?>?v=1.1.0"></script>
 </body>
 
 </html>

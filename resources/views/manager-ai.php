@@ -86,7 +86,7 @@
             </nav>
 
             <div class="mgr-sidebar-footer">
-                <div class="mgr-clock-out" onclick="window.location.href='<?= url('') ?>/login'">
+                <div class="mgr-clock-out">
                     <i class="fa-solid fa-power-off"></i> Clock Out
                 </div>
             </div>
@@ -132,6 +132,24 @@
                         <p>Ask about sales trends, menu ideas, inventory, shift notes, or anything about running the
                             café.</p>
                     </div>
+                    <button id="clearChatBtn" type="button" title="Clear chat history" style="
+                        margin-left: auto;
+                        background: rgba(255,255,255,0.08);
+                        border: 1px solid rgba(255,255,255,0.18);
+                        color: #fff;
+                        border-radius: 10px;
+                        padding: 7px 14px;
+                        font-size: 0.82rem;
+                        font-family: inherit;
+                        cursor: pointer;
+                        display: flex;
+                        align-items: center;
+                        gap: 6px;
+                        white-space: nowrap;
+                        transition: background 0.2s;
+                    " onmouseover="this.style.background='rgba(255,255,255,0.18)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+                        <i class="fa-solid fa-trash-can" style="font-size:0.78rem;"></i> Clear Chat
+                    </button>
                 </div>
 
                 <!-- Chat Display Area -->
@@ -166,7 +184,7 @@
 
     <script src="<?= asset('js/pos-modal.js') ?>?v=1.0.0"></script>
     <script src="<?= asset('js/clock-out.js') ?>?v=1.0.0"></script>
-    <script src="<?= asset('js/manager-ai.js') ?>?v=1.0.0"></script>
+    <script src="<?= asset('js/manager-ai.js') ?>?v=1.2.0"></script>
 </body>
 
 </html>

@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('addAccountModal').classList.remove('active');
     };
 
-    window.openChangePasswordModal = function(id, name, role = 'cashier', currentPin = '') {
+    window.openChangePasswordModal = function(id, name, role = 'cashier') {
         document.getElementById('changePasswordForm').reset();
         document.getElementById('cpUserId').value = id;
         document.getElementById('cpUserRole').value = role;
@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (cpPinSection) cpPinSection.style.display = 'block';
             if (cpPasswordSection) cpPasswordSection.style.display = 'none';
             if (cpNewPin) {
-                cpNewPin.value = currentPin || generateRandomPin();
+                cpNewPin.value = generateRandomPin();
                 cpNewPin.required = true;
             }
             if (cpNewPwd) cpNewPwd.required = false;
@@ -153,8 +153,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Load Accounts
     function loadAccounts() {
         fetch(`${BASE}/api/users`)
-            .then(res => res.json())
+            .then(res => {
+                if (res.status === 401 || res.status === 403) {
+                    window.location.href = BASE + '/login';
+                    return null;
+                }
+                return res.json();
+            })
             .then(data => {
+                if (!data) return;
                 if (data.success) {
                     if (data.owner && data.owner.email) {
                         localStorage.setItem('userEmail', data.owner.email);
@@ -171,7 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const tbody = document.getElementById('accountsTableBody');
         tbody.innerHTML = '';
 
-        if (users.length === 0) {
+        if (!users || users.length === 0) {
             tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No accounts found.</td></tr>';
             return;
         }
@@ -188,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 : '<span style="color: #ed6c02; font-weight:600;"><i class="fa-solid fa-clock"></i> Verification Sent</span>';
 
             const pinDisplay = user.role === 'cashier' 
-                ? `<span style="font-family: monospace; background: #fef3c7; color: #b45309; font-weight: 800; padding: 2px 7px; border-radius: 6px; font-size: 0.85rem; margin-left: 6px; border: 1px solid #fde68a;">PIN: ${user.pin || 'None'}</span>`
+                ? `<span style="font-family: monospace; background: #e0f2fe; color: #0369a1; font-weight: 700; padding: 2px 7px; border-radius: 6px; font-size: 0.85rem; margin-left: 6px; border: 1px solid #bae6fd;"><i class="fa-solid fa-shield-halved"></i> PIN Active</span>`
                 : '';
 
             const resetBtnText = user.role === 'cashier' ? 'Reset PIN' : 'Reset Password';
@@ -199,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td><span class="role-badge role-${user.role}">${user.role}</span> ${pinDisplay}</td>
                 <td>${isVerified}</td>
                 <td>
-                    <button class="action-btn" onclick="openChangePasswordModal(${user.id}, '${user.name.replace(/'/g, "\\'")}', '${user.role}', '${user.pin || ''}')">
+                    <button class="action-btn" onclick="openChangePasswordModal(${user.id}, '${user.name.replace(/'/g, "\\'")}', '${user.role}')">
                         <i class="fa-solid fa-key"></i> ${resetBtnText}
                     </button>
                     <button class="action-btn" onclick="deleteUser(${user.id}, '${user.name.replace(/'/g, "\\'")}')" style="color: #d32f2f; border-color: #ffcdd2; margin-left: 5px;">

@@ -442,6 +442,100 @@ document.addEventListener('DOMContentLoaded', () => {
             renderTargetProgress(data.analytics.target_progress);
             renderDayParts(data.analytics.day_parts, data.analytics.top_day_part);
         }
+
+        renderHourlyHeatmap(range);
+    }
+
+    let peakHoursData = null;
+
+    function fetchPeakHoursData(callback) {
+        fetch(`${BASE}/api/manager/peak-hours`)
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    peakHoursData = res.data;
+                    if (callback) callback();
+                }
+            })
+            .catch(err => console.error('Error fetching peak hours data:', err));
+    }
+
+    function renderHourlyHeatmap(range) {
+        const grid = document.getElementById('hourlyHeatmapGrid');
+        if (!grid) return;
+
+        const rangeKey = range === 'daily' ? 'today' : (range === 'weekly' ? 'weekly' : 'monthly');
+
+        if (!peakHoursData) {
+            fetchPeakHoursData(() => renderHourlyHeatmap(range));
+            return;
+        }
+
+        const hours = peakHoursData[rangeKey] || [];
+        if (hours.length === 0) {
+            grid.innerHTML = '<div style="text-align: center; color: #8d786c; grid-column: 1 / -1; padding: 1.5rem;">No hourly sales recorded for this period.</div>';
+            return;
+        }
+
+        grid.innerHTML = '';
+        hours.forEach(slot => {
+            const card = document.createElement('div');
+            card.style.borderRadius = '12px';
+            card.style.padding = '10px 8px';
+            card.style.textAlign = 'center';
+            card.style.transition = 'all 0.2s ease';
+            card.style.cursor = 'default';
+            card.style.userSelect = 'none';
+
+            const intensity = slot.intensity || 0;
+            let bg = 'rgba(235, 220, 205, 0.35)';
+            let textColor = '#8d786c';
+            let border = '1px solid rgba(220, 200, 180, 0.4)';
+            let revColor = '#5c4033';
+            let shadow = 'none';
+
+            if (slot.count === 0) {
+                bg = 'rgba(240, 235, 228, 0.4)';
+                textColor = '#ab988d';
+                revColor = '#ab988d';
+            } else if (intensity < 30) {
+                bg = 'rgba(197, 153, 88, 0.18)';
+                textColor = '#5c4033';
+                revColor = '#2c1a14';
+                border = '1px solid rgba(197, 153, 88, 0.35)';
+            } else if (intensity < 70) {
+                bg = 'rgba(197, 153, 88, 0.45)';
+                textColor = '#2c1a14';
+                revColor = '#2c1a14';
+                border = '1px solid rgba(197, 153, 88, 0.7)';
+                shadow = '0 2px 8px rgba(197, 153, 88, 0.2)';
+            } else {
+                bg = 'linear-gradient(135deg, #b47c3e, #805325)';
+                textColor = '#fdfaf6';
+                revColor = '#ffffff';
+                border = '1px solid #6b431c';
+                shadow = '0 4px 14px rgba(180, 124, 62, 0.35)';
+            }
+
+            card.style.background = bg;
+            card.style.border = border;
+            card.style.boxShadow = shadow;
+
+            card.innerHTML = `
+                <p style="font-size: 0.68rem; font-weight: 700; margin: 0 0 4px 0; color: ${textColor}; text-transform: uppercase; letter-spacing: 0.3px;">${slot.label}</p>
+                <p style="font-family: 'Outfit', sans-serif; font-size: 0.92rem; font-weight: 800; margin: 0 0 2px 0; color: ${revColor};">${formatCurrency(slot.revenue)}</p>
+                <p style="font-size: 0.68rem; font-weight: 600; margin: 0; color: ${textColor}; opacity: 0.9;">${slot.count} order${slot.count === 1 ? '' : 's'}</p>
+            `;
+
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-3px)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0)';
+            });
+
+            grid.appendChild(card);
+        });
     }
 
     function fetchSalesData() {
@@ -466,6 +560,151 @@ document.addEventListener('DOMContentLoaded', () => {
             applyRange(this.getAttribute('data-range'));
         });
     });
+
+    // =========================================================
+    // END-OF-SHIFT SUMMARY REPORT MODAL
+    // =========================================================
+    const shiftSummaryBtn = document.getElementById('shiftSummaryBtn');
+    const shiftSummaryModal = document.getElementById('shiftSummaryModal');
+
+    window.closeShiftSummaryModal = function() {
+        if (shiftSummaryModal) shiftSummaryModal.style.display = 'none';
+    };
+
+    window.printShiftSummary = function() {
+        const printContent = document.getElementById('shiftSummaryPrintableArea');
+        if (!printContent) return;
+        const win = window.open('', '_blank', 'width=850,height=700');
+        win.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Earthbred - Shift Summary Report</title>
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+                <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+                <style>
+                    body { font-family: 'Montserrat', sans-serif; padding: 20px; color: #2c1a14; background: #fff; }
+                    @media print { button { display: none !important; } }
+                </style>
+            </head>
+            <body>
+                ${printContent.innerHTML}
+                <script>window.onload = () => { window.print(); }<\/script>
+            </body>
+            </html>
+        `);
+        win.document.close();
+    };
+
+    if (shiftSummaryBtn && shiftSummaryModal) {
+        shiftSummaryBtn.addEventListener('click', () => {
+            shiftSummaryModal.style.display = 'flex';
+            
+            fetch(`${BASE}/api/manager/shift-summary`)
+                .then(r => r.json())
+                .then(res => {
+                    if (!res.success) return;
+                    const data = res;
+                    const s = data.summary;
+
+                    document.getElementById('shiftModalDate').textContent = data.date_label || 'Today';
+                    document.getElementById('shiftModalTimestamp').textContent = `Generated on ${data.generated_at}`;
+
+                    document.getElementById('shiftModalNetRev').textContent = formatCurrency(s.total_revenue);
+                    document.getElementById('shiftModalGross').textContent = formatCurrency(s.gross_revenue);
+                    document.getElementById('shiftModalOrders').textContent = s.total_orders;
+                    document.getElementById('shiftModalCompleted').textContent = s.completed_orders;
+                    document.getElementById('shiftModalPending').textContent = s.pending_orders;
+                    document.getElementById('shiftModalCash').textContent = formatCurrency(s.cash_revenue);
+                    document.getElementById('shiftModalGcash').textContent = formatCurrency(s.gcash_revenue);
+                    document.getElementById('shiftModalDiscounts').textContent = '-' + formatCurrency(s.total_discounts);
+                    document.getElementById('shiftModalVoids').textContent = s.voided_count;
+
+                    // Cashiers list
+                    const cashierList = document.getElementById('shiftModalCashierList');
+                    if (cashierList) {
+                        cashierList.innerHTML = '';
+                        if (data.cashier_breakdown && data.cashier_breakdown.length > 0) {
+                            data.cashier_breakdown.forEach(c => {
+                                const row = document.createElement('div');
+                                row.style.display = 'flex';
+                                row.style.justifyContent = 'space-between';
+                                row.style.alignItems = 'center';
+                                row.style.padding = '4px 0';
+                                row.style.borderBottom = '1px dashed #ebdcd0';
+                                row.innerHTML = `
+                                    <span style="font-weight: 600; color: #5c4033;"><i class="fa-solid fa-user-tag" style="color: #c59958; margin-right: 6px;"></i> ${c.cashier_name}</span>
+                                    <span><strong>${formatCurrency(c.revenue)}</strong> <small style="color: #8d786c;">(${c.orders} orders)</small></span>
+                                `;
+                                cashierList.appendChild(row);
+                            });
+                        } else {
+                            cashierList.innerHTML = '<p style="color: #8d786c; margin: 0;">No active cashier sessions today.</p>';
+                        }
+                    }
+
+                    // Inventory stock alerts
+                    const invContainer = document.getElementById('shiftModalInventoryAlerts');
+                    if (invContainer) {
+                        invContainer.innerHTML = '';
+                        const oos = data.inventory_alerts?.out_of_stock || [];
+                        const low = data.inventory_alerts?.low_stock || [];
+
+                        if (oos.length === 0 && low.length === 0) {
+                            invContainer.innerHTML = '<p style="color: #16a34a; font-weight: 600; margin: 0;"><i class="fa-solid fa-circle-check"></i> All ingredient stock levels are optimal.</p>';
+                        } else {
+                            oos.forEach(item => {
+                                const tag = document.createElement('div');
+                                tag.style.background = '#fef2f2';
+                                tag.style.color = '#dc2626';
+                                tag.style.border = '1px solid #fecaca';
+                                tag.style.borderRadius = '6px';
+                                tag.style.padding = '4px 8px';
+                                tag.style.fontWeight = '700';
+                                tag.style.fontSize = '0.75rem';
+                                tag.innerHTML = `<i class="fa-solid fa-ban"></i> OUT OF STOCK: ${item}`;
+                                invContainer.appendChild(tag);
+                            });
+
+                            low.forEach(item => {
+                                const tag = document.createElement('div');
+                                tag.style.background = '#fffbeb';
+                                tag.style.color = '#b45309';
+                                tag.style.border = '1px solid #fde68a';
+                                tag.style.borderRadius = '6px';
+                                tag.style.padding = '4px 8px';
+                                tag.style.fontWeight = '600';
+                                tag.style.fontSize = '0.75rem';
+                                tag.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> LOW STOCK: ${item.item_name} (${item.quantity} left)`;
+                                invContainer.appendChild(tag);
+                            });
+                        }
+                    }
+
+                    // Top 5 items table
+                    const topItemsBody = document.getElementById('shiftModalTopItems');
+                    if (topItemsBody) {
+                        topItemsBody.innerHTML = '';
+                        if (data.top_items && data.top_items.length > 0) {
+                            data.top_items.forEach((item, idx) => {
+                                const tr = document.createElement('tr');
+                                tr.style.borderBottom = '1px solid #f2e8dc';
+                                tr.innerHTML = `
+                                    <td style="padding: 8px; font-weight: 800; color: #c59958;">#${idx + 1}</td>
+                                    <td style="padding: 8px; font-weight: 600; color: #2c1a14;">${item.product_name}</td>
+                                    <td style="padding: 8px; text-align: right; font-weight: 700; color: #5c4033;">${item.qty_sold}</td>
+                                    <td style="padding: 8px; text-align: right; font-weight: 700; color: #16a34a;">${formatCurrency(item.revenue)}</td>
+                                `;
+                                topItemsBody.appendChild(tr);
+                            });
+                        } else {
+                            topItemsBody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 1rem; color: #8d786c;">No item sales recorded today.</td></tr>';
+                        }
+                    }
+                })
+                .catch(err => console.error('Error fetching shift summary:', err));
+        });
+    }
 
 
     // =========================================================

@@ -471,7 +471,7 @@
         </nav>
 
         <div class="mgr-sidebar-footer">
-            <div class="mgr-clock-out" onclick="window.location.href='<?= url('') ?>/login'">
+            <div class="mgr-clock-out">
                 <i class="fa-solid fa-power-off"></i> Clock Out
             </div>
         </div>
@@ -517,7 +517,10 @@
                     <i class="fa-solid fa-shield-halved"></i> Manager Protected
                 </span>
             </div>
-            <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <button class="resolve-btn" id="shiftSummaryBtn" style="display: flex; align-items: center; gap: 8px; background: #2c1a14; color: #fdfaf6; border: 1px solid rgba(197,153,88,0.4);">
+                    <i class="fa-solid fa-file-waveform"></i> End-of-Shift Summary
+                </button>
                 <button class="resolve-btn" id="exportSalesReportPdfBtn" style="display: flex; align-items: center; gap: 8px;">
                     <i class="fa-solid fa-file-pdf"></i> Export PDF Report
                 </button>
@@ -662,6 +665,28 @@
                             <p id="dpEveningRevenue" style="font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 800; color: #2c1a14; margin: 0 0 2px 0;">₱0</p>
                             <p id="dpEveningOrders" style="font-size: 0.74rem; color: #8d786c; margin: 0;">0 orders</p>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Hourly Peak Trading Heatmap -->
+                <div class="mgr-panel" style="margin-top: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; flex-wrap: wrap; gap: 0.5rem;">
+                        <div>
+                            <h4 class="mgr-panel-title" style="margin-bottom: 2px;"><i class="fa-solid fa-chart-simple" style="color: #c59958; margin-right: 6px;"></i> Hourly Trading Heatmap</h4>
+                            <p style="font-size: 0.78rem; color: #8d786c; margin: 0;">Visual peak order velocity and revenue density from 8:00 AM to 10:00 PM.</p>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; font-size: 0.72rem; color: #8d786c;">
+                            <span>Low</span>
+                            <span style="display: inline-block; width: 12px; height: 12px; background: rgba(197, 153, 88, 0.15); border-radius: 3px;"></span>
+                            <span style="display: inline-block; width: 12px; height: 12px; background: rgba(197, 153, 88, 0.45); border-radius: 3px;"></span>
+                            <span style="display: inline-block; width: 12px; height: 12px; background: rgba(197, 153, 88, 0.75); border-radius: 3px;"></span>
+                            <span style="display: inline-block; width: 12px; height: 12px; background: #966b33; border-radius: 3px;"></span>
+                            <span>Peak</span>
+                        </div>
+                    </div>
+                    <div id="hourlyHeatmapGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(68px, 1fr)); gap: 8px; margin-top: 0.5rem;">
+                        <!-- Generated via JS -->
+                        <div style="text-align: center; color: #8d786c; grid-column: 1 / -1; padding: 1.5rem;">Loading hourly trading heatmap...</div>
                     </div>
                 </div>
 
@@ -976,6 +1001,108 @@
         <div style="text-align: right; margin-top: 1.5rem;">
             <button onclick="closeCashierModal()" style="background: #2c1a14; color: #fff; border: none; padding: 0.6rem 1.4rem; border-radius: 9999px; font-family: 'Outfit', sans-serif; font-weight: 700; cursor: pointer;">
                 Close Breakdown
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================
+     SHIFT SUMMARY REPORT MODAL
+========================================= -->
+<div id="shiftSummaryModal" style="display: none; position: fixed; inset: 0; background: rgba(30, 20, 15, 0.65); backdrop-filter: blur(5px); z-index: 99999; overflow-y: auto; padding: 1.5rem 1rem; align-items: center; justify-content: center;">
+    <div style="background: #fdfbf7; border: 1.5px solid #e2d1c3; border-radius: 20px; max-width: 820px; width: 100%; margin: auto; padding: 1.75rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35); position: relative;" id="shiftSummaryPrintableArea">
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1.5px solid #ece0d1; padding-bottom: 1rem; margin-bottom: 1.25rem;">
+            <div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="background: #2c1a14; color: #c59958; font-weight: 800; font-size: 0.75rem; padding: 4px 10px; border-radius: 6px; letter-spacing: 0.5px;">DAILY SHIFT REPORT</span>
+                    <span id="shiftModalDate" style="font-size: 0.82rem; font-weight: 600; color: #8d786c;">Today</span>
+                </div>
+                <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.45rem; font-weight: 800; color: #2c1a14; margin: 6px 0 0 0;">End-of-Shift Store Reconciliation</h3>
+                <p style="font-size: 0.8rem; color: #8d786c; margin: 2px 0 0 0;" id="shiftModalTimestamp">Generated on —</p>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button onclick="window.printShiftSummary()" style="background: #c59958; color: #fff; border: none; padding: 0.55rem 1rem; border-radius: 10px; font-weight: 700; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-print"></i> Print Report
+                </button>
+                <button onclick="closeShiftSummaryModal()" style="background: #ebdcd0; color: #5c4033; border: none; width: 34px; height: 34px; border-radius: 50%; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Summary KPI Cards -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 0.75rem; margin-bottom: 1.25rem;">
+            <div style="background: #fff; border: 1px solid #ebdcd0; border-radius: 12px; padding: 0.85rem;">
+                <p style="font-size: 0.72rem; font-weight: 700; color: #8d786c; margin: 0; text-transform: uppercase;">Net Collected</p>
+                <p id="shiftModalNetRev" style="font-family: 'Outfit', sans-serif; font-size: 1.35rem; font-weight: 800; color: #16a34a; margin: 4px 0 0 0;">₱0</p>
+                <p style="font-size: 0.7rem; color: #8d786c; margin: 2px 0 0 0;">Gross: <span id="shiftModalGross">₱0</span></p>
+            </div>
+            <div style="background: #fff; border: 1px solid #ebdcd0; border-radius: 12px; padding: 0.85rem;">
+                <p style="font-size: 0.72rem; font-weight: 700; color: #8d786c; margin: 0; text-transform: uppercase;">Orders Handled</p>
+                <p id="shiftModalOrders" style="font-family: 'Outfit', sans-serif; font-size: 1.35rem; font-weight: 800; color: #2c1a14; margin: 4px 0 0 0;">0</p>
+                <p style="font-size: 0.7rem; color: #8d786c; margin: 2px 0 0 0;"><span id="shiftModalCompleted">0</span> Done &bull; <span id="shiftModalPending">0</span> In-Queue</p>
+            </div>
+            <div style="background: #fff; border: 1px solid #ebdcd0; border-radius: 12px; padding: 0.85rem;">
+                <p style="font-size: 0.72rem; font-weight: 700; color: #8d786c; margin: 0; text-transform: uppercase;">Cash in Drawer</p>
+                <p id="shiftModalCash" style="font-family: 'Outfit', sans-serif; font-size: 1.35rem; font-weight: 800; color: #b45309; margin: 4px 0 0 0;">₱0</p>
+                <p style="font-size: 0.7rem; color: #8d786c; margin: 2px 0 0 0;">GCash: <span id="shiftModalGcash">₱0</span></p>
+            </div>
+            <div style="background: #fff; border: 1px solid #ebdcd0; border-radius: 12px; padding: 0.85rem;">
+                <p style="font-size: 0.72rem; font-weight: 700; color: #8d786c; margin: 0; text-transform: uppercase;">Discounts & Voids</p>
+                <p id="shiftModalDiscounts" style="font-family: 'Outfit', sans-serif; font-size: 1.35rem; font-weight: 800; color: #dc2626; margin: 4px 0 0 0;">₱0</p>
+                <p style="font-size: 0.7rem; color: #8d786c; margin: 2px 0 0 0;"><span id="shiftModalVoids">0</span> Voided orders</p>
+            </div>
+        </div>
+
+        <!-- Two Columns: Cashier Breakdown + Inventory Alerts -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+            <!-- Cashier Breakdown -->
+            <div style="background: #fff; border: 1px solid #ebdcd0; border-radius: 12px; padding: 1rem;">
+                <h5 style="font-size: 0.85rem; font-weight: 800; color: #2c1a14; margin: 0 0 0.75rem 0; display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-users" style="color: #c59958;"></i> Cashier Performance
+                </h5>
+                <div id="shiftModalCashierList" style="display: flex; flex-direction: column; gap: 6px; font-size: 0.8rem;">
+                    <p style="color: #8d786c; margin: 0;">No cashier shift data.</p>
+                </div>
+            </div>
+
+            <!-- Inventory Watchlist -->
+            <div style="background: #fff; border: 1px solid #ebdcd0; border-radius: 12px; padding: 1rem;">
+                <h5 style="font-size: 0.85rem; font-weight: 800; color: #2c1a14; margin: 0 0 0.75rem 0; display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-triangle-exclamation" style="color: #d97706;"></i> Inventory Stock Alerts
+                </h5>
+                <div id="shiftModalInventoryAlerts" style="display: flex; flex-direction: column; gap: 6px; font-size: 0.8rem;">
+                    <p style="color: #8d786c; margin: 0;">All stock levels optimal.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Selling Items Today Table -->
+        <div style="background: #fff; border: 1px solid #ebdcd0; border-radius: 12px; padding: 1rem;">
+            <h5 style="font-size: 0.85rem; font-weight: 800; color: #2c1a14; margin: 0 0 0.75rem 0; display: flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-trophy" style="color: #c59958;"></i> Top 5 Products This Shift
+            </h5>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.82rem;">
+                    <thead>
+                        <tr style="border-bottom: 1.5px solid #ece0d1; background: #faf5eb;">
+                            <th style="padding: 8px; text-align: left; color: #8d786c; font-weight: 700;">#</th>
+                            <th style="padding: 8px; text-align: left; color: #8d786c; font-weight: 700;">ITEM</th>
+                            <th style="padding: 8px; text-align: right; color: #8d786c; font-weight: 700;">QTY</th>
+                            <th style="padding: 8px; text-align: right; color: #8d786c; font-weight: 700;">REVENUE</th>
+                        </tr>
+                    </thead>
+                    <tbody id="shiftModalTopItems">
+                        <tr><td colspan="4" style="text-align: center; padding: 1rem; color: #8d786c;">Loading top items...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div style="text-align: right; margin-top: 1.25rem;">
+            <button onclick="closeShiftSummaryModal()" style="background: #2c1a14; color: #fff; border: none; padding: 0.6rem 1.4rem; border-radius: 9999px; font-family: 'Outfit', sans-serif; font-weight: 700; cursor: pointer;">
+                Close Report
             </button>
         </div>
     </div>

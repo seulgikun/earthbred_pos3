@@ -102,9 +102,11 @@
                 if (role === 'owner') {
                     document.body.classList.add('is-owner');
                     document.querySelectorAll('.owner-only-link').forEach(el => el.style.setProperty('display', 'flex', 'important'));
+                    document.querySelectorAll('.owner-only-btn').forEach(el => el.style.setProperty('display', 'inline-flex', 'important'));
                 } else {
                     document.body.classList.remove('is-owner');
                     document.querySelectorAll('.owner-only-link').forEach(el => el.style.setProperty('display', 'none', 'important'));
+                    document.querySelectorAll('.owner-only-btn').forEach(el => el.style.setProperty('display', 'none', 'important'));
                 }
                 if (localStorage.getItem('userName')) {
                     const userNameEl = document.querySelector('.mgr-user-name');
@@ -126,17 +128,33 @@
                 </div>
             </header>
 
-            <div style="padding: 1.25rem 1.25rem 0; display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap;">
-                <button class="add-product-btn" onclick="openVoidPinModal()" style="background-color:#533524;"><i class="fa-solid fa-key"></i> Manage Void PIN</button>
-                <button class="add-product-btn" onclick="openAddonsModal()" style="background-color:#4a3728;"><i class="fa-solid fa-cookie-bite"></i> Manage Add-ons</button>
-                <button class="add-product-btn" onclick="openDiscountsModal()" style="background-color:#482f25;"><i class="fa-solid fa-percent"></i> Manage Discounts</button>
-                <button class="add-product-btn" onclick="openAddModal()" style="background-color:#3d271d;"><i class="fa-solid fa-plus"></i> Add Item</button>
+            <div style="padding: 1.25rem 1.25rem 0; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <!-- Search and Category Filter -->
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex: 1; min-width: 280px;">
+                    <div style="position: relative; flex: 1; max-width: 320px;">
+                        <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #8d786c; font-size: 0.85rem;"></i>
+                        <input type="text" id="managerProductSearch" placeholder="Search menu items..." style="width: 100%; padding: 8px 12px 8px 34px; border: 1.5px solid #eadeca; border-radius: 8px; font-family: 'Poppins', sans-serif; font-size: 0.85rem; outline: none; background: #fff; box-sizing: border-box;">
+                    </div>
+                    <div style="display: flex; gap: 4px; flex-wrap: wrap;" id="managerCategoryFilterWrap">
+                        <button type="button" class="mgr-filter-pill active" data-cat="all">All</button>
+                        <button type="button" class="mgr-filter-pill" data-cat="coffee">Coffee</button>
+                        <button type="button" class="mgr-filter-pill" data-cat="non-coffee">Non-Coffee</button>
+                        <button type="button" class="mgr-filter-pill" data-cat="lemonade">Lemonade</button>
+                        <button type="button" class="mgr-filter-pill" data-cat="foods">Foods</button>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button class="add-product-btn" onclick="openAddonsModal()" style="background-color:#4a3728;"><i class="fa-solid fa-cookie-bite"></i> Manage Add-ons</button>
+                    <button class="add-product-btn" onclick="openDiscountsModal()" style="background-color:#482f25;"><i class="fa-solid fa-percent"></i> Manage Discounts</button>
+                    <button class="add-product-btn" onclick="openAddModal()" style="background-color:#3d271d;"><i class="fa-solid fa-plus"></i> Add Item</button>
+                </div>
             </div>
 
             <div class="mgr-content">
-                <div class="products-grid">
+                <div class="products-grid" id="managerProductsGrid">
                     <?php foreach($products as $product): ?>
-                    <div class="product-card">
+                    <div class="product-card" data-category="<?= htmlspecialchars(strtolower(trim($product->category))) ?>" data-name="<?= htmlspecialchars(strtolower(trim($product->name))) ?>">
                         <div class="product-image-wrap">
                             <img src="<?= asset('images/' . $product->picture) ?>" alt="<?= htmlspecialchars($product->name) ?>">
                         </div>
@@ -161,6 +179,9 @@
                     </div>
                     <?php endforeach; ?>
                 </div>
+
+                <!-- Manager Product Pagination -->
+                <div class="mgr-pagination" id="managerProductsPagination" style="margin-top: 1.5rem;"></div>
             </div>
         </main>
     </div>
@@ -264,45 +285,6 @@
                     <!-- populated by js -->
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Void PIN Modal -->
-    <div class="modal-overlay" id="voidPinModal">
-        <div class="modal-content" style="max-width: 420px;">
-            <div class="modal-header">
-                <h3 class="modal-title"><i class="fa-solid fa-key" style="color: #3d271d;"></i> Manage Void PIN</h3>
-                <button class="close-modal-btn" onclick="closeVoidPinModal()"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="modal-body">
-                <p style="font-size: 0.85rem; color: #666; margin-top: 0; margin-bottom: 15px;">Configure the 4-digit authorization PIN required to void orders in POS.</p>
-                <form id="voidPinForm">
-                    <div class="form-group">
-                        <label for="newVoidPin">New Void PIN (4 Digits)</label>
-                        <div style="position: relative; display: flex; align-items: center;">
-                            <input type="password" id="newVoidPin" maxlength="4" pattern="\d{4}" inputmode="numeric" required placeholder="••••" style="width: 100%; padding: 10px 42px 10px 12px; border-radius: 6px; border: 1px solid #ccc; font-family: 'Poppins', sans-serif; letter-spacing: 4px; font-size: 1.1rem; box-sizing: border-box;">
-                            <button type="button" onclick="togglePinEye('newVoidPin', 'eyeIconNew')" style="position: absolute; right: 10px; background: none; border: none; color: #888; cursor: pointer; padding: 6px; font-size: 1rem;">
-                                <i class="fa-solid fa-eye" id="eyeIconNew"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="form-group" style="margin-top: 15px;">
-                        <label for="confirmVoidPin">Confirm Void PIN</label>
-                        <div style="position: relative; display: flex; align-items: center;">
-                            <input type="password" id="confirmVoidPin" maxlength="4" pattern="\d{4}" inputmode="numeric" required placeholder="••••" style="width: 100%; padding: 10px 42px 10px 12px; border-radius: 6px; border: 1px solid #ccc; font-family: 'Poppins', sans-serif; letter-spacing: 4px; font-size: 1.1rem; box-sizing: border-box;">
-                            <button type="button" onclick="togglePinEye('confirmVoidPin', 'eyeIconConfirm')" style="position: absolute; right: 10px; background: none; border: none; color: #888; cursor: pointer; padding: 6px; font-size: 1rem;">
-                                <i class="fa-solid fa-eye" id="eyeIconConfirm"></i>
-                            </button>
-                        </div>
-                        <small id="pinValidationMsg" style="display:none; margin-top: 4px; font-weight: 500;"></small>
-                    </div>
-
-                    <button type="submit" class="save-btn" id="saveVoidPinBtn" style="margin-top: 20px; width: 100%; padding: 12px; font-size: 0.95rem; background-color: #3d271d;">Save Void PIN</button>
-                </form>
-            </div>
-        </div>
-    </div>
     <script src="<?= asset('js/pos-modal.js') ?>?v=1.1.0"></script>
     <script src="<?= asset('js/clock-out.js') ?>?v=1.1.0"></script>
     <script src="<?= asset('js/manager-products.js') ?>?v=1.4.0"></script>

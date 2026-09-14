@@ -12,6 +12,7 @@ use Illuminate\Validation\Rules\Password;
 use App\Notifications\VerifyAccountNotification;
 use App\Notifications\OwnerPasswordResetNotification;
 use App\Models\AuditLog;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -57,6 +58,8 @@ class UserController extends Controller
                 ], 403);
             }
 
+            Auth::login($user, true);
+
             session([
                 'user_id' => (string) $user->id,
                 'user_name' => $user->name,
@@ -99,21 +102,19 @@ class UserController extends Controller
 
         $pin = trim((string) $request->pin);
 
-        // Exclusive to cashier role only
-        $cashier = User::where('role', 'cashier')
-            ->where('pin', $pin)
-            ->first();
-
-        // Fallback for any legacy cashier where pin column wasn't set yet
-        if (!$cashier) {
-            $cashiers = User::where('role', 'cashier')->get();
-            foreach ($cashiers as $c) {
-                if ($c->password && Hash::check($pin, $c->password)) {
-                    $cashier = $c;
-                    $cashier->pin = $pin;
-                    $cashier->save();
-                    break;
-                }
+        // Check cashiers by hashed password/pin
+        $cashier = null;
+        $cashiers = User::where('role', 'cashier')->get();
+        foreach ($cashiers as $c) {
+            if ($c->password && Hash::check($pin, $c->password)) {
+                $cashier = $c;
+                break;
+            } elseif ($c->pin && $c->pin === $pin) {
+                // Legacy plaintext fallback: upgrade to hash immediately
+                $c->password = Hash::make($pin);
+                $c->save();
+                $cashier = $c;
+                break;
             }
         }
 
@@ -131,6 +132,8 @@ class UserController extends Controller
                 'message' => 'Your cashier account is not verified yet. Please check your email (' . $cashier->email . ') for the verification link sent upon registration.'
             ], 403);
         }
+
+        Auth::login($cashier, true);
 
         session([
             'user_id' => (string) $cashier->id,
@@ -151,20 +154,49 @@ class UserController extends Controller
     }
 
     /**
+     * Terminate user session and log out.
+     */
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Logged out successfully.'
+        ]);
+    }
+
+    /**
      * Display a listing of non-owner accounts.
+     * PINs are strictly masked/omitted to prevent credential exposure.
      */
     public function index()
     {
         $users = User::whereIn('role', ['manager', 'cashier'])
                      ->orderBy('role')
                      ->orderBy('name')
-                     ->get(['id', 'name', 'email', 'role', 'pin', 'email_verified_at', 'created_at']);
+                     ->get(['id', 'name', 'email', 'role', 'pin', 'password', 'email_verified_at', 'created_at']);
+
+        // Transform collection to mask PIN and password details
+        $sanitizedUsers = $users->map(function ($u) {
+            return [
+                'id' => $u->id,
+                'name' => $u->name,
+                'email' => $u->email,
+                'role' => $u->role,
+                'has_pin' => !empty($u->pin) || !empty($u->password),
+                'email_verified_at' => $u->email_verified_at,
+                'created_at' => $u->created_at,
+            ];
+        });
 
         $owner = User::where('role', 'owner')->first(['id', 'name', 'email']);
                      
         return response()->json([
             'success' => true,
-            'users' => $users,
+            'users' => $sanitizedUsers,
             'owner' => $owner
         ]);
     }
@@ -389,22 +421,18 @@ class UserController extends Controller
             );
 
             $resetUrl = url('/reset-password?token=' . $token . '&email=' . urlencode($email));
-            \Log::info("PASSWORD RESET LINK FOR {$email}: {$resetUrl}");
 
             $mailError = null;
             try {
                 $user->notify(new OwnerPasswordResetNotification($token));
             } catch (\Throwable $e) {
                 $mailError = $e->getMessage();
-                \Log::error('Failed sending password reset email: ' . $mailError);
-                \Log::info("MANUAL RESET URL (mail failed): {$resetUrl}");
+                \Log::error('Failed sending password reset email for user ID ' . $user->id);
             }
 
             return response()->json([
                 'success' => true,
-                'message' => $mailError
-                    ? 'Password reset link generated. Email delivery failed (' . $mailError . '). Check Railway logs for the reset link.'
-                    : 'A password reset link has been sent to ' . $email . '. Please check your email inbox.',
+                'message' => 'If an account exists with that email, a password reset link has been sent to your email inbox.',
                 'email_sent' => is_null($mailError),
             ]);
 
@@ -589,12 +617,14 @@ class UserController extends Controller
      */
     public function updateVoidPin(Request $request)
     {
-        // Enforce role authorization: Only owners/admins can modify the Void PIN
-        $role = strtolower(trim($request->header('X-User-Role') ?: $request->input('user_role', '')));
-        if ($role !== 'owner' && $role !== 'admin') {
+        // Enforce role authorization: Only authenticated store owners can modify the Void PIN
+        $user = Auth::user();
+        $userRole = $user ? $user->role : session('user_role');
+
+        if ($userRole !== 'owner' && $userRole !== 'admin') {
             return response()->json([
                 'success' => false,
-                'message' => 'Unauthorized action: Only system administrators or store owners are permitted to modify the Void PIN.'
+                'message' => 'Unauthorized action: Only store owners or system administrators are permitted to modify the Void PIN.'
             ], 403);
         }
 

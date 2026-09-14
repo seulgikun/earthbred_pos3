@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Inventory;
 use App\Models\InventoryLog;
 use App\Models\AuditLog;
+use Illuminate\Support\Facades\Cache;
 
 class InventoryController extends Controller
 {
@@ -65,6 +66,9 @@ class InventoryController extends Controller
             'notes' => 'Stock added manually'
         ]);
 
+        // Clear POS cache so stock status updates on next page load
+        Cache::forget('pos_products');
+
         // Audit Log for owner tracking
         AuditLog::record(
             'INVENTORY_UPDATE',
@@ -104,6 +108,9 @@ class InventoryController extends Controller
         $item->quantity = $newQty;
         $item->latest_issue_type = $validated['issue_type'];
         $item->save();
+
+        // Clear POS cache so stock status updates on next page load
+        Cache::forget('pos_products');
 
         // Create audit log entry
         InventoryLog::create([
@@ -192,21 +199,54 @@ class InventoryController extends Controller
     {
         $item = Inventory::findOrFail($id);
         $itemName = $item->item_name;
-        // Delete related logs first to avoid foreign key constraints (if any)
-        InventoryLog::where('inventory_id', $item->id)->delete();
-        $item->delete();
+        $item->delete(); // Soft delete into archive
 
         // Audit Log for owner tracking
         AuditLog::record(
-            'INVENTORY_UPDATE',
-            "Inventory item '{$itemName}' was permanently deleted from the system.",
+            'INVENTORY_ARCHIVE',
+            "Inventory item '{$itemName}' was archived (soft deleted).",
             "Inventory: {$itemName}",
             request()
         );
 
         return response()->json([
             'success' => true,
-            'message' => 'Item deleted successfully!'
+            'message' => "Item '{$itemName}' moved to archive successfully!"
+        ]);
+    }
+
+    /**
+     * Retrieve all soft-deleted / archived inventory items.
+     */
+    public function getArchived()
+    {
+        $archived = Inventory::onlyTrashed()->orderBy('deleted_at', 'desc')->get();
+        return response()->json([
+            'success' => true,
+            'items' => $archived
+        ]);
+    }
+
+    /**
+     * Restore an archived inventory item.
+     */
+    public function restoreItem($id)
+    {
+        $item = Inventory::onlyTrashed()->findOrFail($id);
+        $itemName = $item->item_name;
+        $item->restore();
+
+        // Audit Log for owner tracking
+        AuditLog::record(
+            'INVENTORY_RESTORE',
+            "Archived inventory item '{$itemName}' was restored to active inventory.",
+            "Inventory: {$itemName}",
+            request()
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => "Item '{$itemName}' restored successfully!"
         ]);
     }
 }

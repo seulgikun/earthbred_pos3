@@ -453,154 +453,129 @@ async function deleteDiscount(id) {
 }
 
 // ==========================================
-// Void PIN Management (Exclusive for Owner & Manager)
+// Product Management Pagination & Search
 // ==========================================
-const voidPinModal = document.getElementById('voidPinModal');
-const voidPinForm = document.getElementById('voidPinForm');
-const newVoidPinInput = document.getElementById('newVoidPin');
-const confirmVoidPinInput = document.getElementById('confirmVoidPin');
-const pinValidationMsg = document.getElementById('pinValidationMsg');
+(function initManagerProductPagination() {
+    const grid = document.getElementById('managerProductsGrid');
+    const paginationEl = document.getElementById('managerProductsPagination');
+    const searchInput = document.getElementById('managerProductSearch');
+    const filterPills = document.querySelectorAll('#managerCategoryFilterWrap .mgr-filter-pill');
+    if (!grid || !paginationEl) return;
 
-function openVoidPinModal() {
-    if (voidPinModal) {
-        voidPinModal.style.display = 'flex';
-        if (voidPinForm) voidPinForm.reset();
-        if (pinValidationMsg) pinValidationMsg.style.display = 'none';
-        resetPinEye('newVoidPin', 'eyeIconNew');
-        resetPinEye('confirmVoidPin', 'eyeIconConfirm');
-    }
-}
+    const cards = Array.from(grid.querySelectorAll('.product-card'));
+    const MGR_PAGE_SIZE = 8;
+    let currentMgrPage = 1;
+    let activeCat = 'all';
+    let searchQuery = '';
 
-function closeVoidPinModal() {
-    if (voidPinModal) {
-        voidPinModal.style.display = 'none';
-        if (voidPinForm) voidPinForm.reset();
-        if (pinValidationMsg) pinValidationMsg.style.display = 'none';
-    }
-}
+    function applyFilterAndPaginate(resetPage = true) {
+        if (resetPage) currentMgrPage = 1;
 
-function togglePinEye(inputId, iconId) {
-    const input = document.getElementById(inputId);
-    const icon = document.getElementById(iconId);
-    if (!input || !icon) return;
+        // Filter cards matching category & search
+        const matchingCards = cards.filter(card => {
+            const cat = (card.getAttribute('data-category') || '').toLowerCase().trim();
+            const name = (card.getAttribute('data-name') || '').toLowerCase().trim();
 
-    if (input.type === 'password') {
-        input.type = 'text';
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
-    } else {
-        input.type = 'password';
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
-    }
-}
+            const matchCat = activeCat === 'all' || cat === activeCat;
+            const matchSearch = !searchQuery || name.includes(searchQuery) || cat.includes(searchQuery);
 
-function resetPinEye(inputId, iconId) {
-    const input = document.getElementById(inputId);
-    const icon = document.getElementById(iconId);
-    if (input) input.type = 'password';
-    if (icon) {
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
-    }
-}
+            return matchCat && matchSearch;
+        });
 
-if (confirmVoidPinInput && newVoidPinInput) {
-    function checkPinMatch() {
-        const pin = newVoidPinInput.value;
-        const confirm = confirmVoidPinInput.value;
-        if (!confirm) {
-            pinValidationMsg.style.display = 'none';
-            return;
-        }
-        if (pin === confirm) {
-            pinValidationMsg.style.display = 'block';
-            pinValidationMsg.style.color = '#2e7d32';
-            pinValidationMsg.innerHTML = '<i class="fa-solid fa-circle-check"></i> PINs match';
-        } else {
-            pinValidationMsg.style.display = 'block';
-            pinValidationMsg.style.color = '#c5221f';
-            pinValidationMsg.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> PINs do not match';
-        }
-    }
-
-    newVoidPinInput.addEventListener('input', checkPinMatch);
-    confirmVoidPinInput.addEventListener('input', checkPinMatch);
-}
-
-if (voidPinForm) {
-    voidPinForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const pin = newVoidPinInput.value.trim();
-        const pinConfirmation = confirmVoidPinInput.value.trim();
-        const btn = document.getElementById('saveVoidPinBtn');
-
-        if (!/^\d{4}$/.test(pin)) {
-            PosDialog.alert({
-                title: 'Invalid PIN',
-                message: 'Void PIN must be exactly 4 numeric digits.',
-                icon: 'fa-key',
-                iconType: 'warning'
-            });
-            return;
-        }
-
-        if (pin !== pinConfirmation) {
-            PosDialog.alert({
-                title: 'PIN Mismatch',
-                message: 'The confirmation PIN does not match the new PIN.',
-                icon: 'fa-triangle-exclamation',
-                iconType: 'danger'
-            });
-            return;
-        }
-
-        btn.textContent = 'Saving...';
-        btn.disabled = true;
-
-        try {
-            const res = await fetch(BASE + '/api/void-pin/update', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    'Accept': 'application/json',
-                    'X-User-Role': (localStorage.getItem('userRole') || '').toLowerCase()
-                },
-                body: JSON.stringify({
-                    pin: pin,
-                    pin_confirmation: pinConfirmation
-                })
-            });
-
-            const data = await res.json();
-            if (data.success) {
-                closeVoidPinModal();
-                PosDialog.alert({
-                    title: 'Void PIN Updated',
-                    message: data.message || 'Void PIN successfully updated!',
-                    icon: 'fa-circle-check',
-                    iconType: 'success'
-                });
-            } else {
-                PosDialog.alert({
-                    title: 'Failed to Update PIN',
-                    message: data.message || 'Could not update Void PIN.',
-                    icon: 'fa-triangle-exclamation',
-                    iconType: 'danger'
-                });
+        // Hide non-matching cards
+        cards.forEach(c => {
+            if (!matchingCards.includes(c)) {
+                c.style.display = 'none';
             }
-        } catch (err) {
-            console.error(err);
-            PosDialog.alert({
-                title: 'Error',
-                message: 'A network error occurred while updating the Void PIN.',
-                icon: 'fa-triangle-exclamation',
-                iconType: 'danger'
-            });
-        } finally {
-            btn.textContent = 'Save Void PIN';
-            btn.disabled = false;
+        });
+
+        const totalItems = matchingCards.length;
+        const totalPages = Math.ceil(totalItems / MGR_PAGE_SIZE) || 1;
+        if (currentMgrPage > totalPages) currentMgrPage = totalPages;
+        if (currentMgrPage < 1) currentMgrPage = 1;
+
+        // Show slice for current page
+        const start = (currentMgrPage - 1) * MGR_PAGE_SIZE;
+        const end = start + MGR_PAGE_SIZE;
+
+        matchingCards.forEach((c, index) => {
+            if (index >= start && index < end) {
+                c.style.display = 'flex';
+            } else {
+                c.style.display = 'none';
+            }
+        });
+
+        // Render pagination controls
+        if (totalItems === 0) {
+            paginationEl.innerHTML = '<span class="pagination-info" style="color: #dc2626;">No matching products found.</span>';
+            paginationEl.style.display = 'flex';
+            return;
         }
+
+        if (totalPages <= 1) {
+            paginationEl.innerHTML = `<span class="pagination-info">Showing all ${totalItems} items</span>`;
+            paginationEl.style.display = 'flex';
+            return;
+        }
+
+        paginationEl.style.display = 'flex';
+        let html = '';
+
+        // Prev Button
+        html += `<button type="button" class="pagination-btn" ${currentMgrPage === 1 ? 'disabled' : ''} data-page="${currentMgrPage - 1}"><i class="fa-solid fa-chevron-left"></i> Prev</button>`;
+
+        // Page buttons
+        for (let p = 1; p <= totalPages; p++) {
+            html += `<button type="button" class="pagination-btn ${p === currentMgrPage ? 'active' : ''}" data-page="${p}">${p}</button>`;
+        }
+
+        // Next Button
+        html += `<button type="button" class="pagination-btn ${currentMgrPage === totalPages ? 'disabled' : ''} data-page="${currentMgrPage + 1}">Next <i class="fa-solid fa-chevron-right"></i></button>`;
+
+        const startIdx = start + 1;
+        const endIdx = Math.min(end, totalItems);
+        html += `<span class="pagination-info">${startIdx}–${endIdx} of ${totalItems} items</span>`;
+
+        paginationEl.innerHTML = html;
+
+        // Bind clicks
+        paginationEl.querySelectorAll('.pagination-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (this.disabled) return;
+                const p = parseInt(this.getAttribute('data-page'), 10);
+                if (!isNaN(p)) {
+                    currentMgrPage = p;
+                    applyFilterAndPaginate(false);
+                    const mgrMain = document.querySelector('.mgr-main');
+                    if (mgrMain) mgrMain.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            });
+        });
+    }
+
+    // Category pill listeners
+    filterPills.forEach(pill => {
+        pill.addEventListener('click', function() {
+            filterPills.forEach(p => p.classList.remove('active'));
+            this.classList.add('active');
+            activeCat = this.getAttribute('data-cat') || 'all';
+            applyFilterAndPaginate(true);
+        });
     });
-}
+
+    // Search input listener with debounce
+    if (searchInput) {
+        let timeout = null;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                searchQuery = (this.value || '').toLowerCase().trim();
+                applyFilterAndPaginate(true);
+            }, 180);
+        });
+    }
+
+    // Initial run
+    applyFilterAndPaginate(true);
+})();

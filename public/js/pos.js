@@ -32,14 +32,62 @@ document.addEventListener('DOMContentLoaded', () => {
     // Note: Responsive Sidebar Drawer Toggle is handled globally by clock-out.js
 
     // =============================================
-    // Unified Product Filtering (Sidebar & Tablet Bar)
+    // Unified Product Filtering & Pagination (Sidebar & Tablet Bar)
     // =============================================
     const menuItems = document.querySelectorAll('.menu-item');
     const categoryChips = document.querySelectorAll('.category-chip');
     const productCards = document.querySelectorAll('.product-card');
 
-    function applyCategoryFilter(filterValue) {
-        if (!filterValue) return;
+    const POS_PAGE_SIZE = 10;
+    let currentPosPage = 1;
+    let activeCategoryFilter = 'all';
+
+    function renderPosPagination(totalItems) {
+        const paginationEl = document.getElementById('posPagination');
+        if (!paginationEl) return;
+
+        const totalPages = Math.ceil(totalItems / POS_PAGE_SIZE) || 1;
+        if (currentPosPage > totalPages) currentPosPage = totalPages;
+        if (currentPosPage < 1) currentPosPage = 1;
+
+        if (totalPages <= 1) {
+            paginationEl.innerHTML = '';
+            paginationEl.style.display = 'none';
+            return;
+        }
+
+        paginationEl.style.display = 'flex';
+        let html = '';
+
+        // Prev Button
+        html += `<button class="pagination-btn" ${currentPosPage === 1 ? 'disabled' : ''} onclick="goToPosPage(${currentPosPage - 1})"><i class="fa-solid fa-chevron-left"></i> Prev</button>`;
+
+        // Page numbers
+        for (let p = 1; p <= totalPages; p++) {
+            html += `<button class="pagination-btn ${p === currentPosPage ? 'active' : ''}" onclick="goToPosPage(${p})">${p}</button>`;
+        }
+
+        // Next Button
+        html += `<button class="pagination-btn" ${currentPosPage === totalPages ? 'disabled' : ''} onclick="goToPosPage(${currentPosPage + 1})">Next <i class="fa-solid fa-chevron-right"></i></button>`;
+
+        const startIdx = (currentPosPage - 1) * POS_PAGE_SIZE + 1;
+        const endIdx = Math.min(currentPosPage * POS_PAGE_SIZE, totalItems);
+        html += `<span class="pagination-info">${startIdx}–${endIdx} of ${totalItems}</span>`;
+
+        paginationEl.innerHTML = html;
+    }
+
+    window.goToPosPage = function(page) {
+        currentPosPage = page;
+        applyCategoryFilter(activeCategoryFilter, false);
+        const main = document.querySelector('.main-content');
+        if (main) main.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    function applyCategoryFilter(filterValue, resetPage = true) {
+        if (!filterValue) filterValue = 'all';
+        activeCategoryFilter = filterValue;
+        if (resetPage) currentPosPage = 1;
 
         // Sync menu item pills
         menuItems.forEach(i => {
@@ -59,18 +107,30 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Filter cards
+        // Filter cards matching category
+        const matchingCards = [];
         productCards.forEach(card => {
-            if (filterValue === 'all') {
-                card.style.display = 'flex';
+            const cat = (card.getAttribute('data-category') || '').toLowerCase().trim();
+            if (filterValue === 'all' || cat === filterValue) {
+                matchingCards.push(card);
             } else {
-                if (card.getAttribute('data-category') === filterValue) {
-                    card.style.display = 'flex';
-                } else {
-                    card.style.display = 'none';
-                }
+                card.style.display = 'none';
             }
         });
+
+        // Paginate matching cards
+        const start = (currentPosPage - 1) * POS_PAGE_SIZE;
+        const end = start + POS_PAGE_SIZE;
+
+        matchingCards.forEach((card, index) => {
+            if (index >= start && index < end) {
+                card.style.display = 'flex';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        renderPosPagination(matchingCards.length);
     }
 
     menuItems.forEach(item => {
@@ -80,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const filterValue = item.getAttribute('data-filter');
             if (filterValue) {
-                applyCategoryFilter(filterValue);
+                applyCategoryFilter(filterValue, true);
             }
 
             // Close drawer if on tablet/mobile
@@ -94,10 +154,17 @@ document.addEventListener('DOMContentLoaded', () => {
         chip.addEventListener('click', () => {
             const filterValue = chip.getAttribute('data-filter');
             if (filterValue) {
-                applyCategoryFilter(filterValue);
+                applyCategoryFilter(filterValue, true);
             }
         });
     });
+
+    // Check URL query param e.g. /pos?filter=coffee on load
+    (function initFilter() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const filterParam = urlParams.get('filter') || 'all';
+        applyCategoryFilter(filterParam, true);
+    })();
 
     // =============================================
     // Clock out logic handled globally by clock-out.js
@@ -192,6 +259,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Open Modal when clicking a product card
     productCards.forEach(card => {
         card.addEventListener('click', () => {
+            // Guard against clicking out-of-stock products
+            if (card.classList.contains('is-out-of-stock') || card.getAttribute('data-out-of-stock') === 'true') {
+                return;
+            }
+
             const name = card.querySelector('.product-name').innerText;
             const priceText = card.querySelector('.product-price').innerText;
             const imgEl = card.querySelector('.product-image');
@@ -235,6 +307,12 @@ document.addEventListener('DOMContentLoaded', () => {
             
             updateTotalPrice();
             modal.style.display = 'flex';
+            setTimeout(() => {
+                if (qtyInput) {
+                    qtyInput.focus();
+                    qtyInput.select();
+                }
+            }, 60);
         });
     });
 
@@ -266,20 +344,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Quantity controls
-    if (qtyMinus && qtyPlus) {
-        qtyMinus.addEventListener('click', () => {
-            let qty = parseInt(qtyInput.value);
-            if (qty > 1) {
-                qtyInput.value = qty - 1;
-                updateTotalPrice();
-            }
+    // Quantity input direct typing events
+    if (qtyInput) {
+        qtyInput.addEventListener('input', () => {
+            updateTotalPrice();
         });
 
-        qtyPlus.addEventListener('click', () => {
-            let qty = parseInt(qtyInput.value);
-            qtyInput.value = qty + 1;
+        qtyInput.addEventListener('change', () => {
+            let val = parseInt(qtyInput.value);
+            if (isNaN(val) || val < 1) {
+                qtyInput.value = 1;
+            }
             updateTotalPrice();
+        });
+
+        qtyInput.addEventListener('focus', () => {
+            qtyInput.select();
         });
     }
 
@@ -305,6 +385,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             let qty = parseInt(qtyInput.value);
+            if (isNaN(qty) || qty < 1) qty = 1;
             let itemTotal = (currentBasePrice + addonsTotal) * qty;
 
             const cartItem = {
@@ -382,5 +463,106 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // =============================================
+    // Real-Time Stock Status Polling
+    // =============================================
+    function applyStockStatus(outOfStockIds) {
+        const ids = new Set(outOfStockIds.map(String));
+        productCards.forEach(card => {
+            const cardId = String(card.getAttribute('data-id') || '');
+            const isOut = ids.has(cardId);
+            const wasOut = card.getAttribute('data-out-of-stock') === 'true';
+
+            if (isOut === wasOut) return; // No change needed
+
+            card.setAttribute('data-out-of-stock', isOut ? 'true' : 'false');
+
+            if (isOut) {
+                card.classList.add('is-out-of-stock');
+                // Insert out-of-stock badge if missing
+                if (!card.querySelector('.out-of-stock-badge')) {
+                    const badge = document.createElement('div');
+                    badge.className = 'out-of-stock-badge';
+                    badge.innerHTML = '<i class="fa-solid fa-ban"></i> OUT OF STOCK';
+                    card.insertBefore(badge, card.firstChild);
+                }
+                // Remove the + add button
+                const addBtn = card.querySelector('.add-btn');
+                if (addBtn) addBtn.remove();
+            } else {
+                card.classList.remove('is-out-of-stock');
+                // Remove out-of-stock badge
+                const badge = card.querySelector('.out-of-stock-badge');
+                if (badge) badge.remove();
+                // Restore the + add button if missing
+                if (!card.querySelector('.add-btn')) {
+                    const addBtn = document.createElement('button');
+                    addBtn.className = 'add-btn';
+                    addBtn.innerHTML = '<i class="fa-solid fa-plus"></i>';
+                    card.insertBefore(addBtn, card.firstChild);
+                }
+            }
+        });
+    }
+
+    // Inject a stock alert banner below the header
+    function showStockAlertBanner(data) {
+        const existing = document.getElementById('posStockAlertBar');
+        if (existing) existing.remove();
+
+        const alerts = [];
+        if (data.out_of_stock_alerts && data.out_of_stock_alerts.length > 0) {
+            const names = data.out_of_stock_alerts.map(a => a.item_name).join(', ');
+            alerts.push(`<span style="color:#c5221f;"><i class="fa-solid fa-circle-exclamation"></i> <strong>OUT OF STOCK:</strong> ${names}</span>`);
+        }
+        if (data.low_stock_alerts && data.low_stock_alerts.length > 0) {
+            const names = data.low_stock_alerts.map(a => `${a.item_name} (${a.quantity})`).join(', ');
+            alerts.push(`<span style="color:#b06000;"><i class="fa-solid fa-triangle-exclamation"></i> <strong>LOW STOCK:</strong> ${names}</span>`);
+        }
+
+        if (alerts.length === 0) return;
+
+        const bar = document.createElement('div');
+        bar.id = 'posStockAlertBar';
+        bar.style.cssText = `
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(255,248,230,0.96);
+            border-bottom: 1px solid rgba(229,160,0,0.35);
+            padding: 8px 20px;
+            display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+            font-family: 'Outfit', sans-serif; font-size: 0.82rem; font-weight: 600;
+            backdrop-filter: blur(8px);
+        `;
+        bar.innerHTML = `
+            <div style="display:flex;flex-direction:column;gap:2px;">${alerts.join('')}</div>
+            <button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;color:#888;font-size:1rem;padding:2px 6px;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>`;
+
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent) mainContent.insertBefore(bar, mainContent.firstChild);
+    }
+
+    function pollStockStatus() {
+        fetch(BASE + '/api/pos/stock-status', {
+            credentials: 'same-origin',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+            if (!data) return;
+            if (Array.isArray(data.out_of_stock)) {
+                applyStockStatus(data.out_of_stock);
+            }
+            showStockAlertBanner(data);
+        })
+        .catch(() => {}); // Silently fail — page will catch up on next reload
+    }
+
+    // Poll immediately on page load, then every 60 seconds
+    pollStockStatus();
+    setInterval(pollStockStatus, 60000);
+
 });
+
 

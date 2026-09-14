@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="<?= asset('css/ios26-theme.css') ?>?v=1.0.1">
     <link rel="icon" type="image/png" href="<?= asset('favicon.png') ?>?v=3.0">
     <link rel="apple-touch-icon" href="<?= asset('images/apple-touch-icon.png') ?>?v=3.0">
+    <meta name="csrf-token" content="<?= csrf_token() ?>">
     <!-- Inline styles for account management -->
     <style>
         .mgr-accounts-table {
@@ -687,6 +688,9 @@
                     <button class="owner-reset-pw-btn" id="resetMyPasswordBtn" onclick="openOwnerResetModal()">
                         <i class="fa-solid fa-key"></i> Reset My Password
                     </button>
+                    <button class="owner-reset-pw-btn" id="changeVoidPinBtn" onclick="openVoidPinModal()" style="background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%) !important; border-color: #5f1414 !important;">
+                        <i class="fa-solid fa-shield-halved"></i> Change Void PIN
+                    </button>
                     <button class="add-product-btn" onclick="openAddAccountModal()" style="background-color:#3d271d;"><i
                             class="fa-solid fa-plus"></i> Add Account</button>
                 </div>
@@ -898,6 +902,51 @@
                         Cancel
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Void PIN Modal (Owner Only) -->
+    <div class="modal-overlay" id="voidPinModal">
+        <div class="modal-content" style="max-width: 440px;">
+            <div class="modal-header">
+                <h3 class="modal-title" style="color: #7f1d1d; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-shield-halved"></i> Change Void PIN
+                </h3>
+                <button type="button" class="close-modal-btn" onclick="closeVoidPinModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="voidPinForm">
+                    <p style="font-family: 'Poppins', sans-serif; font-size: 0.85rem; color: #666; margin-bottom: 15px; line-height: 1.4;">
+                        Set a 4-digit security PIN used to authorize order cancellations and void transactions in the POS.
+                    </p>
+
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="newVoidPin" style="display: block; font-family: 'Poppins', sans-serif; font-size: 0.85rem; color: #5c4a40; margin-bottom: 5px; font-weight: 500;">New 4-Digit Void PIN</label>
+                        <div style="position: relative; display: flex; align-items: center;">
+                            <input type="password" id="newVoidPin" name="pin" maxlength="4" pattern="\d{4}" inputmode="numeric" required placeholder="Enter 4 digits" style="width: 100%; padding: 10px 40px 10px 12px; border: 1px solid #ccc; border-radius: 6px; font-family: 'Poppins', sans-serif; letter-spacing: 3px; font-size: 1rem; box-sizing: border-box;">
+                            <button type="button" onclick="togglePinEye('newVoidPin', 'eyeIconNew')" style="position: absolute; right: 10px; background: none; border: none; color: #888; cursor: pointer; padding: 4px; font-size: 1rem;">
+                                <i class="fa-solid fa-eye" id="eyeIconNew"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="confirmVoidPin" style="display: block; font-family: 'Poppins', sans-serif; font-size: 0.85rem; color: #5c4a40; margin-bottom: 5px; font-weight: 500;">Confirm 4-Digit Void PIN</label>
+                        <div style="position: relative; display: flex; align-items: center;">
+                            <input type="password" id="confirmVoidPin" name="pin_confirmation" maxlength="4" pattern="\d{4}" inputmode="numeric" required placeholder="Re-enter 4 digits" style="width: 100%; padding: 10px 40px 10px 12px; border: 1px solid #ccc; border-radius: 6px; font-family: 'Poppins', sans-serif; letter-spacing: 3px; font-size: 1rem; box-sizing: border-box;">
+                            <button type="button" onclick="togglePinEye('confirmVoidPin', 'eyeIconConfirm')" style="position: absolute; right: 10px; background: none; border: none; color: #888; cursor: pointer; padding: 4px; font-size: 1rem;">
+                                <i class="fa-solid fa-eye" id="eyeIconConfirm"></i>
+                            </button>
+                        </div>
+                        <div id="pinValidationMsg" style="display: none; font-size: 0.8rem; margin-top: 5px; font-weight: 500;"></div>
+                    </div>
+
+                    <div class="modal-footer" style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+                        <button type="button" onclick="closeVoidPinModal()" style="padding: 10px 18px; border: 1px solid #ccc; background: #fff; border-radius: 6px; cursor: pointer; font-family: 'Poppins', sans-serif;">Cancel</button>
+                        <button type="submit" id="saveVoidPinBtn" class="save-btn" style="background: #7f1d1d; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-family: 'Poppins', sans-serif; font-weight: 600;">Save Void PIN</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -1262,6 +1311,178 @@
             d.appendChild(document.createTextNode(str));
             return d.innerHTML;
         }
+
+        // Void PIN Modal Handling in Accounts
+        function openVoidPinModal() {
+            const modal = document.getElementById('voidPinModal');
+            const form = document.getElementById('voidPinForm');
+            const msg = document.getElementById('pinValidationMsg');
+            const input = document.getElementById('newVoidPin');
+            if (modal) {
+                modal.classList.add('active');
+                if (form) form.reset();
+                if (msg) msg.style.display = 'none';
+                if (input) setTimeout(() => input.focus(), 100);
+                resetPinEye('newVoidPin', 'eyeIconNew');
+                resetPinEye('confirmVoidPin', 'eyeIconConfirm');
+            }
+        }
+
+        function closeVoidPinModal() {
+            const modal = document.getElementById('voidPinModal');
+            const form = document.getElementById('voidPinForm');
+            const msg = document.getElementById('pinValidationMsg');
+            if (modal) {
+                modal.classList.remove('active');
+                if (form) form.reset();
+                if (msg) msg.style.display = 'none';
+            }
+        }
+
+        function togglePinEye(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (!input || !icon) return;
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        function resetPinEye(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input) input.type = 'password';
+            if (icon) {
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const newVoidPinInput = document.getElementById('newVoidPin');
+            const confirmVoidPinInput = document.getElementById('confirmVoidPin');
+            const pinValidationMsg = document.getElementById('pinValidationMsg');
+            const voidPinForm = document.getElementById('voidPinForm');
+
+            function checkPinMatch() {
+                if (!newVoidPinInput || !confirmVoidPinInput || !pinValidationMsg) return;
+                const pin = newVoidPinInput.value;
+                const confirm = confirmVoidPinInput.value;
+                if (!confirm) {
+                    pinValidationMsg.style.display = 'none';
+                    return;
+                }
+                if (pin === confirm) {
+                    pinValidationMsg.style.display = 'block';
+                    pinValidationMsg.style.color = '#2e7d32';
+                    pinValidationMsg.innerHTML = '<i class="fa-solid fa-circle-check"></i> PINs match';
+                } else {
+                    pinValidationMsg.style.display = 'block';
+                    pinValidationMsg.style.color = '#c5221f';
+                    pinValidationMsg.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> PINs do not match';
+                }
+            }
+
+            if (newVoidPinInput) newVoidPinInput.addEventListener('input', checkPinMatch);
+            if (confirmVoidPinInput) confirmVoidPinInput.addEventListener('input', checkPinMatch);
+
+            if (voidPinForm) {
+                voidPinForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    const pin = newVoidPinInput ? newVoidPinInput.value.trim() : '';
+                    const pinConfirmation = confirmVoidPinInput ? confirmVoidPinInput.value.trim() : '';
+                    const btn = document.getElementById('saveVoidPinBtn');
+
+                    if (!/^\d{4}$/.test(pin)) {
+                        PosDialog.alert({
+                            title: 'Invalid PIN',
+                            message: 'Void PIN must be exactly 4 numeric digits.',
+                            icon: 'fa-key',
+                            iconType: 'warning'
+                        });
+                        return;
+                    }
+
+                    if (pin !== pinConfirmation) {
+                        PosDialog.alert({
+                            title: 'PIN Mismatch',
+                            message: 'The confirmation PIN does not match the new PIN.',
+                            icon: 'fa-triangle-exclamation',
+                            iconType: 'danger'
+                        });
+                        return;
+                    }
+
+                    if (btn) {
+                        btn.textContent = 'Saving...';
+                        btn.disabled = true;
+                    }
+
+                    try {
+                        const tokenMeta = document.querySelector('meta[name="csrf-token"]');
+                        const csrfToken = tokenMeta ? tokenMeta.getAttribute('content') : '';
+                        const res = await fetch('<?= url('') ?>/api/void-pin/update', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Accept': 'application/json',
+                                'X-User-Role': (localStorage.getItem('userRole') || '').toLowerCase()
+                            },
+                            body: JSON.stringify({
+                                pin: pin,
+                                pin_confirmation: pinConfirmation
+                            })
+                        });
+
+                        const data = await res.json();
+                        if (data.success) {
+                            closeVoidPinModal();
+                            PosDialog.alert({
+                                title: 'Void PIN Updated',
+                                message: data.message || 'Void PIN successfully updated!',
+                                icon: 'fa-circle-check',
+                                iconType: 'success'
+                            });
+                        } else {
+                            PosDialog.alert({
+                                title: 'Failed to Update PIN',
+                                message: data.message || 'Could not update Void PIN.',
+                                icon: 'fa-triangle-exclamation',
+                                iconType: 'danger'
+                            });
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        PosDialog.alert({
+                            title: 'Error',
+                            message: 'A network error occurred while updating the Void PIN.',
+                            icon: 'fa-triangle-exclamation',
+                            iconType: 'danger'
+                        });
+                    } finally {
+                        if (btn) {
+                            btn.textContent = 'Save Void PIN';
+                            btn.disabled = false;
+                        }
+                    }
+                });
+            }
+
+            const voidModalEl = document.getElementById('voidPinModal');
+            if (voidModalEl) {
+                voidModalEl.addEventListener('click', function(e) {
+                    if (e.target === this) closeVoidPinModal();
+                });
+            }
+        });
     </script>
 </body>
 

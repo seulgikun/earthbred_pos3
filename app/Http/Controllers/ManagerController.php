@@ -999,4 +999,144 @@ class ManagerController extends Controller
             'recent_orders' => $recentOrders
         ]);
     }
+
+    /**
+     * Peak Hours heatmap data — hourly order count + revenue from 8am to 10pm.
+     */
+    public function getPeakHoursData()
+    {
+        $ranges = [
+            'today'   => [Carbon::today()->startOfDay(),   Carbon::today()->endOfDay()],
+            'weekly'  => [Carbon::today()->subDays(6)->startOfDay(), Carbon::today()->endOfDay()],
+            'monthly' => [Carbon::today()->subDays(29)->startOfDay(), Carbon::today()->endOfDay()],
+        ];
+
+        $result = [];
+        foreach ($ranges as $rangeKey => [$startDate, $endDate]) {
+            $hours = [];
+            for ($h = 8; $h <= 22; $h++) {
+                $bucketStart = Carbon::today()->setHour($h)->startOfHour();
+                // For weekly/monthly, aggregate across all days in range using hour-of-day
+                if ($rangeKey === 'today') {
+                    $bucketEnd = $bucketStart->copy()->endOfHour();
+                    $ordersInHour = Order::whereBetween('created_at', [$bucketStart, $bucketEnd])
+                        ->whereIn('status', ['pending', 'completed'])
+                        ->get(['total', 'created_at']);
+                } else {
+                    $ordersInHour = Order::whereBetween('created_at', [$startDate, $endDate])
+                        ->whereIn('status', ['pending', 'completed'])
+                        ->whereRaw('HOUR(created_at) = ?', [$h])
+                        ->get(['total', 'created_at']);
+                }
+
+                $count   = $ordersInHour->count();
+                $revenue = (float) $ordersInHour->sum('total');
+
+                $suffix = $h >= 12 ? 'PM' : 'AM';
+                $displayH = $h > 12 ? $h - 12 : $h;
+                $label = $displayH . ':00 ' . $suffix;
+
+                $hours[] = [
+                    'hour'    => $h,
+                    'label'   => $label,
+                    'count'   => $count,
+                    'revenue' => $revenue,
+                ];
+            }
+
+            $maxRevenue = collect($hours)->max('revenue');
+            // Normalize to 0–100 intensity
+            foreach ($hours as &$slot) {
+                $slot['intensity'] = $maxRevenue > 0 ? round(($slot['revenue'] / $maxRevenue) * 100) : 0;
+            }
+
+            $result[$rangeKey] = $hours;
+        }
+
+        return response()->json(['success' => true, 'data' => $result]);
+    }
+
+    /**
+     * Shift Summary — complete today's operational snapshot for the shift report.
+     */
+    public function getShiftSummary()
+    {
+        $todayStart = Carbon::today()->startOfDay();
+        $todayEnd   = Carbon::today()->endOfDay();
+        $now        = Carbon::now();
+
+        // All orders today
+        $allOrders = Order::with('items')->whereBetween('created_at', [$todayStart, $todayEnd])->get();
+        $activeOrders  = $allOrders->whereIn('status', ['pending', 'completed']);
+        $voidedOrders  = $allOrders->where('status', 'void');
+        $pendingOrders = $allOrders->where('status', 'pending');
+        $completedOrders = $allOrders->where('status', 'completed');
+
+        $totalRevenue   = (float) $activeOrders->sum('total');
+        $totalOrders    = $activeOrders->count();
+        $voidedCount    = $voidedOrders->count();
+        $voidedAmount   = (float) $voidedOrders->sum('total');
+        $avgOrderValue  = $totalOrders > 0 ? round($totalRevenue / $totalOrders, 2) : 0;
+
+        // Payment split
+        $cashRevenue  = (float) $activeOrders->where('payment_method', 'CASH')->sum('total')
+                      + (float) $activeOrders->where('payment_method', 'cash')->sum('total');
+        $gcashRevenue = (float) $activeOrders->where('payment_method', 'GCASH')->sum('total')
+                      + (float) $activeOrders->where('payment_method', 'gcash')->sum('total');
+
+        // Top 5 products today
+        $topItems = OrderItem::select('product_name', DB::raw('SUM(quantity) as qty_sold'), DB::raw('SUM(item_total) as revenue'))
+            ->whereHas('order', fn($q) => $q->whereBetween('created_at', [$todayStart, $todayEnd])->whereIn('status', ['pending', 'completed']))
+            ->groupBy('product_name')
+            ->orderBy('qty_sold', 'desc')
+            ->limit(5)
+            ->get()
+            ->map(fn($i) => [
+                'product_name' => $i->product_name,
+                'qty_sold'     => (int) $i->qty_sold,
+                'revenue'      => (float) $i->revenue,
+            ]);
+
+        // Discounts
+        $totalDiscounts = (float) $activeOrders->sum('discount_amount');
+        $grossRevenue   = $totalRevenue + $totalDiscounts;
+
+        // Cashier breakdown
+        $cashierBreakdown = $activeOrders->groupBy('cashier_name')->map(function ($orders, $name) {
+            return [
+                'cashier_name' => $name ?: 'Unknown',
+                'orders'       => $orders->count(),
+                'revenue'      => (float) $orders->sum('total'),
+            ];
+        })->values();
+
+        // Inventory alerts
+        $outOfStock = \App\Models\Inventory::where('quantity', 0)->pluck('item_name');
+        $lowStock   = \App\Models\Inventory::where('quantity', '>', 0)->whereColumn('quantity', '<=', 'min_threshold')->get(['item_name', 'quantity']);
+
+        return response()->json([
+            'success' => true,
+            'generated_at' => $now->format('F j, Y — g:i A'),
+            'date_label'   => $now->format('F j, Y'),
+            'summary' => [
+                'total_revenue'   => $totalRevenue,
+                'total_orders'    => $totalOrders,
+                'completed_orders'=> $completedOrders->count(),
+                'pending_orders'  => $pendingOrders->count(),
+                'voided_count'    => $voidedCount,
+                'voided_amount'   => $voidedAmount,
+                'avg_order_value' => $avgOrderValue,
+                'gross_revenue'   => $grossRevenue,
+                'total_discounts' => $totalDiscounts,
+                'cash_revenue'    => $cashRevenue,
+                'gcash_revenue'   => $gcashRevenue,
+            ],
+            'top_items'         => $topItems,
+            'cashier_breakdown' => $cashierBreakdown,
+            'inventory_alerts'  => [
+                'out_of_stock' => $outOfStock,
+                'low_stock'    => $lowStock->map(fn($i) => ['item_name' => $i->item_name, 'quantity' => $i->quantity]),
+            ],
+        ]);
+    }
 }

@@ -152,9 +152,8 @@
             <div class="success-icon"><i class="fa-solid fa-circle-check"></i></div>
             <h2>Order Processed!</h2>
             <p id="successOrderId">Order #---</p>
-            <div style="display: flex; gap: 10px; margin-top: 15px; width: 100%;">
-                <button class="success-btn" id="printReceiptBtn" style="background-color: #6a3a30;"><i class="fa-solid fa-print"></i> Re-print Receipt</button>
-                <button class="success-btn" id="successOkBtn" style="flex: 1;">Back to POS</button>
+            <div style="margin-top: 15px; width: 100%;">
+                <button class="success-btn" id="successOkBtn" style="width: 100%;">Back to POS</button>
             </div>
         </div>
     </div>

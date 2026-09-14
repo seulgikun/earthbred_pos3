@@ -395,14 +395,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     localStorage.removeItem('earthbred_cart');
                     cart = [];
 
-                    // Show success modal
+                    // Show success modal (printing is handled at Order Queuing)
                     if (successOrderId) {
                         successOrderId.textContent = `Order #${result.order_id}`;
                     }
                     successModal.style.display = 'flex';
-
-                    // Automatically Trigger Thermal Printing
-                    triggerThermalPrint(orderData, result.order_id);
 
                 } else {
                     PosDialog.alert({
@@ -428,16 +425,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Manual Re-print receipt button on Success Modal
-    if (printReceiptBtn) {
-        printReceiptBtn.addEventListener('click', () => {
-            if (lastProcessedOrderData && lastProcessedOrderId) {
-                triggerThermalPrint(lastProcessedOrderData, lastProcessedOrderId);
-            }
-        });
-    }
-
-    // Success modal OK button
+    // Success modal OK button -> Go back to POS
     if (successOkBtn) {
         successOkBtn.addEventListener('click', () => {
             window.location.href = BASE + '/pos';
