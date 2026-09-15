@@ -150,9 +150,6 @@
                     <li class="menu-item" id="inventory-menu-item" onclick="window.location.href='<?= url('') ?>/inventory'" style="border-top: 1px solid #e5d9c5; margin-top: 0.5rem; padding-top: 1rem;">
                         <span class="menu-icon">📦</span> Inventory
                     </li>
-                    <li class="menu-item" id="sales-report-menu-item" onclick="window.location.href='<?= url('') ?>/manager/sales-report'">
-                        <span class="menu-icon">📊</span> Sales Report
-                    </li>
                 </ul>
             </nav>
 
