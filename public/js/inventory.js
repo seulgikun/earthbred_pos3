@@ -343,7 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const filtered = q
                 ? allItems.filter(i => {
                     const name = (i.item_name || '').toLowerCase();
-                    const cat = (i.category || (i.category_record ? i.category_record.name : '')).toLowerCase();
+                    const cat = (i.category || (i.category_record ? i.category_record.name : '') || '').toLowerCase();
                     return name.includes(q) || cat.includes(q);
                   })
                 : allItems;
