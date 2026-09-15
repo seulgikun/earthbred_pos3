@@ -95,8 +95,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     localStorage.setItem('userRole', data.user.role);
                     localStorage.setItem('userName', data.user.name);
 
-                    // Cashiers are directed straight to the POS terminal
-                    window.location.href = BASE + '/pos';
+                    // Cashiers are directed straight to the POS terminal (replace history state)
+                    window.location.replace(BASE + '/pos');
                 } else {
                     PosDialog.alert({
                         title: 'Access Denied',
@@ -155,9 +155,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     localStorage.setItem('userEmail', data.user.email || '');
                     
                     if (data.user.role === 'owner' || data.user.role === 'manager') {
-                        window.location.href = BASE + '/manager';
+                        window.location.replace(BASE + '/manager');
                     } else {
-                        window.location.href = BASE + '/pos';
+                        window.location.replace(BASE + '/pos');
                     }
                 } else {
                     PosDialog.alert({

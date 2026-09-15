@@ -23,7 +23,16 @@ Route::get('/', function () {
 });
 
 Route::get('/login', function () {
-    return view('index');
+    if (\Illuminate\Support\Facades\Auth::check()) {
+        $user = \Illuminate\Support\Facades\Auth::user();
+        if ($user && $user->role === 'cashier') {
+            return redirect('/pos');
+        }
+        return redirect('/manager');
+    }
+    return response(view('index'))
+        ->header('Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate')
+        ->header('Pragma', 'no-cache');
 })->name('login');
 
 Route::get('/email/verify/{id}/{hash}', [UserController::class, 'verifyEmail'])->name('verification.verify');

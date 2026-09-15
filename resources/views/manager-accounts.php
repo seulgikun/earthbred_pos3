@@ -632,6 +632,24 @@
                     <p class="mgr-user-id" id="sidebarUserId">Owner</p>
                 </div>
             </div>
+            <script>
+                (function() {
+                    window.addEventListener('pageshow', function (event) {
+                        if (event.persisted) {
+                            window.location.reload();
+                        }
+                    });
+                    const role = (localStorage.getItem('userRole') || '').toLowerCase();
+                    if (role !== 'owner') {
+                        window.location.replace('<?= url('') ?>/manager');
+                        return;
+                    }
+                    if (localStorage.getItem('userName')) {
+                        const userNameEl = document.getElementById('sidebarUserName');
+                        if (userNameEl) userNameEl.textContent = localStorage.getItem('userName');
+                    }
+                })();
+            </script>
             <nav class="mgr-nav">
                 <h3 class="mgr-nav-heading">NAVIGATION</h3>
                 <ul class="mgr-nav-list">

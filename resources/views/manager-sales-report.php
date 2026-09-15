@@ -480,11 +480,16 @@
     <script>
         // STRICT ACCESS GUARD: ONLY MANAGER OR OWNER
         (function() {
+            window.addEventListener('pageshow', function (event) {
+                if (event.persisted) {
+                    window.location.reload();
+                }
+            });
             const role = (localStorage.getItem('userRole') || '').toLowerCase();
             const roleLabel = role.charAt(0).toUpperCase() + role.slice(1) || 'Manager';
             if (role !== 'owner' && role !== 'manager') {
-                alert('Access Restricted: Only Store Managers and Owners can access the Sales Report Console.');
-                window.location.href = '<?= url('') ?>/pos';
+                window.location.replace('<?= url('') ?>/pos');
+                return;
             }
             if (role === 'owner') {
                 document.body.classList.add('is-owner');

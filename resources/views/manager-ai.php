@@ -94,7 +94,16 @@
 
         <script>
             (function() {
+                window.addEventListener('pageshow', function (event) {
+                    if (event.persisted) {
+                        window.location.reload();
+                    }
+                });
                 const role = (localStorage.getItem('userRole') || '').toLowerCase();
+                if (role === 'cashier') {
+                    window.location.replace('<?= url('') ?>/pos');
+                    return;
+                }
                 const roleLabel = role.charAt(0).toUpperCase() + role.slice(1) || 'Manager';
                 if (role === 'owner') {
                     document.body.classList.add('is-owner');
