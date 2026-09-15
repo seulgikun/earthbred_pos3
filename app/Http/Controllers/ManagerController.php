@@ -234,8 +234,10 @@ class ManagerController extends Controller
             'Cheezy Bacon' => 'Rice Bowls',
         ];
 
-        // Dynamic products categories map
-        $dbCategories = Product::pluck('category', 'name')->toArray();
+        // Dynamic products categories map via categories join (category column was normalized out)
+        $dbCategories = Product::with('categoryRecord')->get()->mapWithKeys(function ($p) {
+            return [$p->name => $p->category];
+        })->filter()->toArray();
         $categoriesMap = array_merge($categoriesMap, $dbCategories);
 
         // --- 1. DAILY STATS ---
@@ -684,19 +686,21 @@ class ManagerController extends Controller
         $totalStoreSales = (float) (clone $baseOrderQuery)->sum('total');
         $totalStoreOrders = (int) (clone $baseOrderQuery)->count();
 
-        // Get aggregated stats by cashier
+        // Get aggregated stats by cashier (join users to get cashier name)
         $cashierStatsQuery = (clone $baseOrderQuery)
+            ->join('users', 'orders.cashier_id', '=', 'users.id')
             ->select(
-                'cashier_id',
-                'cashier_name',
-                DB::raw('COUNT(id) as orders_count'),
-                DB::raw('SUM(total) as total_sales'),
-                DB::raw("SUM(CASE WHEN payment_method = 'cash' THEN total ELSE 0 END) as cash_sales"),
-                DB::raw("SUM(CASE WHEN payment_method = 'gcash' THEN total ELSE 0 END) as gcash_sales"),
-                DB::raw('MIN(created_at) as first_sale_at'),
-                DB::raw('MAX(created_at) as last_sale_at')
+                'orders.cashier_id',
+                'users.name as cashier_name',
+                'users.email as cashier_email',
+                DB::raw('COUNT(orders.id) as orders_count'),
+                DB::raw('SUM(orders.total) as total_sales'),
+                DB::raw("SUM(CASE WHEN orders.payment_method = 'cash' THEN orders.total ELSE 0 END) as cash_sales"),
+                DB::raw("SUM(CASE WHEN orders.payment_method = 'gcash' THEN orders.total ELSE 0 END) as gcash_sales"),
+                DB::raw('MIN(orders.created_at) as first_sale_at'),
+                DB::raw('MAX(orders.created_at) as last_sale_at')
             )
-            ->groupBy('cashier_id', 'cashier_name');
+            ->groupBy('orders.cashier_id', 'users.name', 'users.email');
 
         // Strictly exclude management/owner roles from cashier sales reports
         $excludedUserIds = \App\Models\User::whereIn('role', ['manager', 'owner', 'admin'])
@@ -746,19 +750,11 @@ class ManagerController extends Controller
 
         // Exclude orders with cashier_id belonging to managers/owners
         if (!empty($excludedUserIds)) {
-            $cashierStatsQuery->where(function ($q) use ($excludedUserIds) {
-                $q->whereNull('cashier_id')
-                  ->orWhereNotIn('cashier_id', $excludedUserIds);
-            });
+            $cashierStatsQuery->whereNotIn('orders.cashier_id', $excludedUserIds);
         }
-        // Also exclude orders created with manager names
-        foreach ($excludedUserNames as $exName) {
-            $cashierStatsQuery->whereRaw('LOWER(TRIM(COALESCE(cashier_name, ""))) != ?', [$exName]);
-        }
-        $cashierStatsQuery->whereRaw('LOWER(COALESCE(cashier_name, "")) NOT LIKE ?', ['%manager%']);
 
         $cashierResults = $cashierStatsQuery->get()->keyBy(function ($item) {
-            return $item->cashier_id ?? ('name_' . ($item->cashier_name ?: 'unassigned'));
+            return $item->cashier_id ?? 'unassigned';
         });
 
         // Strictly fetch only staff with role 'cashier' from users table to display all roster cashiers
@@ -805,9 +801,6 @@ class ManagerController extends Controller
             if ($stats->cashier_id && in_array($stats->cashier_id, $excludedUserIds)) {
                 continue;
             }
-            if ($stats->cashier_name && (in_array(strtolower(trim($stats->cashier_name)), $excludedUserNames) || stripos($stats->cashier_name, 'manager') !== false)) {
-                continue;
-            }
             $sales = (float) $stats->total_sales;
             $ordersCount = (int) $stats->orders_count;
             $aov = $ordersCount > 0 ? round($sales / $ordersCount, 2) : 0.0;
@@ -816,7 +809,7 @@ class ManagerController extends Controller
             $cashiersList[] = [
                 'cashier_id' => $stats->cashier_id,
                 'cashier_name' => $stats->cashier_name ?: 'Front Counter Staff',
-                'email' => 'counter@earthbred.internal',
+                'email' => $stats->cashier_email ?? 'counter@earthbred.internal',
                 'role' => 'Cashier',
                 'total_sales' => $sales,
                 'orders_count' => $ordersCount,

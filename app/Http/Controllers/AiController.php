@@ -55,7 +55,7 @@ class AiController extends Controller
 
         // 2. Data Minimization: Fetch Sanitized Context (No Raw PII or Customer Data)
         try {
-            $products = Product::all(['name', 'category', 'price', 'discounted_price']);
+            $products = Product::with('categoryRecord')->get(['id', 'name', 'category_id', 'price', 'discounted_price']);
             $productsList = $products->map(function($p) {
                 $priceStr = "₱" . number_format((float)$p->price, 2);
                 if ($p->discounted_price && (float)$p->discounted_price > 0) {
@@ -69,7 +69,7 @@ class AiController extends Controller
         }
 
         try {
-            $inventories = Inventory::all(['item_name', 'category', 'quantity', 'min_threshold', 'latest_issue_type']);
+            $inventories = Inventory::with('categoryRecord')->get(['id', 'item_name', 'category_id', 'quantity', 'min_threshold', 'latest_issue_type']);
             $inventoryList = $inventories->map(function($i) {
                 $status = 'OPTIMAL';
                 if ((int)$i->quantity === 0) {

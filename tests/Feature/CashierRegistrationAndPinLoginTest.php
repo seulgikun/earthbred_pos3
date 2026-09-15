@@ -11,8 +11,13 @@ class CashierRegistrationAndPinLoginTest extends TestCase
 {
     public function test_cashier_registration_requires_6_digit_pin()
     {
+        $owner = User::firstOrCreate(
+            ['email' => 'testowner@earthbred.test'],
+            ['name' => 'Test Owner', 'password' => bcrypt('secret123'), 'role' => 'owner', 'email_verified_at' => now()]
+        );
+
         // 5-digit pin should fail
-        $response = $this->postJson('/api/users', [
+        $response = $this->actingAs($owner)->postJson('/api/users', [
             'name' => 'Test Cashier Short',
             'email' => 'shortpin@test.com',
             'role' => 'cashier',
@@ -21,7 +26,7 @@ class CashierRegistrationAndPinLoginTest extends TestCase
         $response->assertStatus(422);
 
         // Non-numeric pin should fail
-        $response = $this->postJson('/api/users', [
+        $response = $this->actingAs($owner)->postJson('/api/users', [
             'name' => 'Test Cashier Letter',
             'email' => 'letterpin@test.com',
             'role' => 'cashier',
@@ -34,14 +39,19 @@ class CashierRegistrationAndPinLoginTest extends TestCase
     {
         Notification::fake();
 
+        $owner = User::firstOrCreate(
+            ['email' => 'testowner@earthbred.test'],
+            ['name' => 'Test Owner', 'password' => bcrypt('secret123'), 'role' => 'owner', 'email_verified_at' => now()]
+        );
+
         // Cleanup if existing
-        User::where('email', 'newcashier6@earthbred.test')->delete();
+        User::where('email', 'newcashier6@gmail.com')->delete();
         User::where('pin', '987654')->delete();
 
         // 1. Create Cashier with 6-digit PIN
-        $response = $this->postJson('/api/users', [
+        $response = $this->actingAs($owner)->postJson('/api/users', [
             'name' => 'New Cashier',
-            'email' => 'newcashier6@earthbred.test',
+            'email' => 'newcashier6@gmail.com',
             'role' => 'cashier',
             'pin' => '987654'
         ]);
@@ -49,7 +59,7 @@ class CashierRegistrationAndPinLoginTest extends TestCase
         $response->assertStatus(201);
         $response->assertJson(['success' => true]);
 
-        $user = User::where('email', 'newcashier6@earthbred.test')->first();
+        $user = User::where('email', 'newcashier6@gmail.com')->first();
         $this->assertNotNull($user);
         $this->assertEquals('987654', $user->pin);
         $this->assertEquals('cashier', $user->role);

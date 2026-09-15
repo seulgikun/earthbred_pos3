@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\Category;
 use App\Models\AuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -12,18 +13,18 @@ class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::all();
+        $products = Product::with('categoryRecord')->get();
         return view('manager-products', compact('products'));
     }
 
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'category' => 'required|string|max:255',
-            'price' => 'required|numeric',
+            'name'             => 'required|string|max:255',
+            'category'         => 'required|string|max:255',
+            'price'            => 'required|numeric',
             'discounted_price' => 'nullable|numeric',
-            'picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'picture'          => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -31,7 +32,10 @@ class ProductController extends Controller
         }
 
         try {
-            $data = $request->except('picture');
+            // Resolve category string → category_id
+            $categoryRecord = Category::findOrCreate($request->category, 'product');
+            $data = $request->except(['picture', 'category']);
+            $data['category_id'] = $categoryRecord->id;
 
             if ($request->hasFile('picture')) {
                 $file = $request->file('picture');
@@ -61,11 +65,11 @@ class ProductController extends Controller
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'category' => 'required|string|max:255',
-            'price' => 'required|numeric',
+            'name'             => 'required|string|max:255',
+            'category'         => 'required|string|max:255',
+            'price'            => 'required|numeric',
             'discounted_price' => 'nullable|numeric',
-            'picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'picture'          => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -75,20 +79,22 @@ class ProductController extends Controller
         try {
             $product = Product::findOrFail($id);
 
-            $data = $request->except('picture');
+            // Resolve category string → category_id
+            $categoryRecord = Category::findOrCreate($request->category, 'product');
+            $data = $request->except(['picture', 'category']);
+            $data['category_id'] = $categoryRecord->id;
 
             if ($request->hasFile('picture')) {
-                // Delete old picture if needed, but keeping it simple for now
                 $file = $request->file('picture');
                 $filename = time() . '_' . $file->getClientOriginalName();
                 $file->move(public_path('images'), $filename);
                 $data['picture'] = $filename;
             }
 
-            $oldPrice = (float)$product->price;
-            $oldDiscounted = $product->discounted_price !== null ? (float)$product->discounted_price : null;
-            $newPrice = (float)$request->price;
-            $newDiscounted = $request->discounted_price !== null && $request->discounted_price !== '' ? (float)$request->discounted_price : null;
+            $oldPrice = (float) $product->price;
+            $oldDiscounted = $product->discounted_price !== null ? (float) $product->discounted_price : null;
+            $newPrice = (float) $request->price;
+            $newDiscounted = $request->discounted_price !== null && $request->discounted_price !== '' ? (float) $request->discounted_price : null;
 
             $product->update($data);
 
@@ -103,8 +109,8 @@ class ProductController extends Controller
                 $changes[] = "Discounted price changed from {$oldDiscText} to {$newDiscText}";
             }
 
-            $action = !empty($changes) ? 'PRICE_UPDATE' : 'PRODUCT_UPDATE';
-            $details = !empty($changes) 
+            $action  = !empty($changes) ? 'PRICE_UPDATE' : 'PRODUCT_UPDATE';
+            $details = !empty($changes)
                 ? "Updated pricing for '{$product->name}': " . implode(', ', $changes)
                 : "Updated product details for '{$product->name}' (Category: {$product->category})";
 
@@ -125,9 +131,9 @@ class ProductController extends Controller
 
     public function destroy(Request $request, $id)
     {
-        $product = Product::findOrFail($id);
+        $product     = Product::findOrFail($id);
         $productName = $product->name;
-        $productCat = $product->category;
+        $productCat  = $product->category;
 
         $product->delete();
 

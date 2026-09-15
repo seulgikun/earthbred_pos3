@@ -13,6 +13,7 @@ class AuditLog extends Model
     protected $table = 'audit_logs';
 
     protected $fillable = [
+        'user_id',          // 3NF fix: direct FK to users table
         'manager_id',
         'manager_name',
         'manager_role',
@@ -21,6 +22,11 @@ class AuditLog extends Model
         'details',
         'ip_address',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 
     /**
      * Record a sensitive store action in the audit log.
@@ -36,6 +42,7 @@ class AuditLog extends Model
         $managerId = null;
         $managerName = null;
         $managerRole = null;
+        $userId = null;
         $ip = '127.0.0.1';
 
         if ($request) {
@@ -48,13 +55,12 @@ class AuditLog extends Model
         }
 
         // If legacy placeholder or missing, resolve fresh from DB
-        if (!$managerName || in_array($managerName, ['Store Manager', 'Earthbred Owner', 'Earthbred Manager', 'null'])) {
-            if ($managerId && is_numeric($managerId)) {
-                $u = User::find($managerId);
-                if ($u) {
-                    $managerName = $u->name;
-                    $managerRole = $u->role;
-                }
+        if ($managerId && is_numeric($managerId)) {
+            $u = User::find($managerId);
+            if ($u) {
+                $userId = $u->id;
+                $managerName = $u->name;
+                $managerRole = $u->role;
             }
         }
 
@@ -62,18 +68,21 @@ class AuditLog extends Model
             if ($managerRole === 'owner') {
                 $owner = User::where('role', 'owner')->first();
                 if ($owner) {
+                    $userId = $owner->id;
                     $managerName = $owner->name;
                     $managerId = (string) $owner->id;
                 }
             } elseif ($managerRole === 'manager') {
                 $mgr = User::where('role', 'manager')->latest()->first();
                 if ($mgr) {
+                    $userId = $mgr->id;
                     $managerName = $mgr->name;
                     $managerId = (string) $mgr->id;
                 }
             } else {
                 $owner = User::where('role', 'owner')->first();
                 if ($owner) {
+                    $userId = $owner->id;
                     $managerName = $owner->name;
                     $managerRole = 'owner';
                     $managerId = (string) $owner->id;
@@ -86,6 +95,7 @@ class AuditLog extends Model
         }
 
         return self::create([
+            'user_id' => $userId ?: (is_numeric($managerId) ? (int)$managerId : null),
             'manager_id' => $managerId ?: '1',
             'manager_name' => $managerName,
             'manager_role' => $managerRole ?: 'staff',

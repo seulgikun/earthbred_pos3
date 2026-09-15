@@ -44,7 +44,7 @@ Route::middleware(['role:cashier,manager,owner'])->group(function () {
         $addons = \Illuminate\Support\Facades\Cache::remember('pos_addons', 300, function() {
             return \App\Models\Addon::all();
         });
-        $inventories = \App\Models\Inventory::all(['item_name', 'quantity', 'category']);
+        $inventories = \App\Models\Inventory::with('categoryRecord')->get(['id', 'item_name', 'category_id', 'quantity', 'min_threshold']);
         return view('pos', compact('products', 'addons', 'inventories'));
     });
 
@@ -79,7 +79,7 @@ Route::middleware(['role:cashier,manager,owner'])->group(function () {
 
     // POS real-time stock status — returns out-of-stock product IDs + low stock alerts
     Route::get('/api/pos/stock-status', function () {
-        $inventories = \App\Models\Inventory::all(['item_name', 'quantity', 'category', 'min_threshold']);
+        $inventories = \App\Models\Inventory::with('categoryRecord')->get(['id', 'item_name', 'category_id', 'quantity', 'min_threshold']);
         $products = \App\Models\Product::all();
         $outOfStockIds = [];
         foreach ($products as $product) {

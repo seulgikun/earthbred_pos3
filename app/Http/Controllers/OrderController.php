@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\OrderItemAddon;
 use App\Models\Product;
 use App\Models\Addon;
+use App\Models\Discount;
 use App\Models\AuditLog;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -35,7 +37,7 @@ class OrderController extends Controller
     public function liveQueue()
     {
         $today = Carbon::today();
-        $orders = Order::with('items')
+        $orders = Order::with(['items.addonRows', 'cashier'])
             ->whereDate('created_at', $today)
             ->orderBy('created_at', 'asc')
             ->get()
@@ -57,7 +59,7 @@ class OrderController extends Controller
                         'quantity'      => $i->quantity,
                         'price'         => (float) ($i->price ?? 0),
                         'item_total'    => (float) $i->item_total,
-                        'addons'        => is_array($i->addons) ? (isset($i->addons[0]['name']) ? array_column($i->addons, 'name') : $i->addons) : [],
+                        'addons'        => array_column($i->addons, 'name'),
                     ])->toArray(),
                 ];
             });
@@ -88,17 +90,16 @@ class OrderController extends Controller
             'total' => 'nullable|numeric|min:0',
             'payment_method' => 'required|string|in:cash,gcash',
             'cashier_id' => 'nullable|integer',
-            'cashier_name' => 'nullable|string|max:255',
+            'cashier_name' => 'nullable|string|max:255', // accepted but ignored; cashier resolved from auth
         ]);
 
         // Identify authenticated cashier / user
         $authUser = Auth::user();
         $cashierId = $authUser ? $authUser->id : ($validated['cashier_id'] ?? session('user_id'));
-        $cashierName = $authUser ? $authUser->name : ($validated['cashier_name'] ?? session('user_name', 'Cashier'));
 
         // Preload DB products and addons for authoritative server-side price calculation
         $productNames = collect($validated['items'])->pluck('product_name')->unique();
-        $products = Product::whereIn('name', $productNames)->get()->keyBy('name');
+        $products = Product::with('categoryRecord')->whereIn('name', $productNames)->get()->keyBy('name');
         $allAddons = Addon::all()->keyBy('name');
 
         $calculatedSubtotal = 0;
@@ -107,14 +108,16 @@ class OrderController extends Controller
         foreach ($validated['items'] as $item) {
             $product = $products->get($item['product_name']);
             $isFood = false;
+            $productId = null;
 
             if ($product) {
-                $category = strtolower(trim((string)$product->category));
+                $category = strtolower(trim((string) $product->category));
                 if (in_array($category, ['foods', 'food'])) {
                     $isFood = true;
                 }
                 // Determine unit price from DB record
                 $unitPrice = (float) ($product->discounted_price > 0 ? $product->discounted_price : $product->price);
+                $productId = $product->id;
             } else {
                 $unitPrice = (float) ($item['price'] ?? 0);
             }
@@ -128,10 +131,12 @@ class OrderController extends Controller
                     $addonName = is_array($addonRaw) ? ($addonRaw['name'] ?? '') : (string) $addonRaw;
                     $dbAddon = $allAddons->get($addonName);
                     $addonPrice = $dbAddon ? (float) $dbAddon->price : (float) (is_array($addonRaw) ? ($addonRaw['price'] ?? 0) : 0);
+                    $addonId = $dbAddon ? $dbAddon->id : null;
                     $addonsTotal += $addonPrice;
                     $processedAddons[] = [
-                        'name' => $addonName,
-                        'price' => $addonPrice
+                        'addon_id' => $addonId,
+                        'name'     => $addonName,
+                        'price'    => $addonPrice,
                     ];
                 }
             }
@@ -141,13 +146,14 @@ class OrderController extends Controller
             $calculatedSubtotal += $itemTotal;
 
             $orderItemsData[] = [
+                'product_id'    => $productId,
                 'customer_name' => $item['customer_name'] ?? null,
-                'product_name' => $item['product_name'],
-                'price' => $unitPrice,
-                'quantity' => $qty,
-                'addons' => $isFood ? [] : $processedAddons,
-                'addons_total' => $isFood ? 0 : $addonsTotal,
-                'item_total' => $itemTotal,
+                'product_name'  => $item['product_name'],
+                'price'         => $unitPrice,
+                'quantity'      => $qty,
+                'addons_total'  => $isFood ? 0 : $addonsTotal,
+                'item_total'    => $itemTotal,
+                '_addons'       => $isFood ? [] : $processedAddons, // temp key, stripped before insert
             ];
         }
 
@@ -155,31 +161,53 @@ class OrderController extends Controller
         $calculatedDiscountAmount = round(($calculatedSubtotal * $discountPercent) / 100, 2);
         $calculatedTotal = max(0, round($calculatedSubtotal - $calculatedDiscountAmount, 2));
 
-        $order = DB::transaction(function () use ($calculatedSubtotal, $discountPercent, $calculatedDiscountAmount, $calculatedTotal, $validated, $cashierId, $cashierName, $orderItemsData) {
+        // Resolve discount_id from percentage if applicable
+        $discountId = null;
+        if ($discountPercent > 0) {
+            $discountRecord = Discount::where('percentage', $discountPercent)->first();
+            if ($discountRecord) {
+                $discountId = $discountRecord->id;
+            }
+        }
+
+        $order = DB::transaction(function () use ($calculatedSubtotal, $discountId, $discountPercent, $calculatedDiscountAmount, $calculatedTotal, $validated, $cashierId, $orderItemsData) {
             $createdOrder = Order::create([
-                'subtotal' => $calculatedSubtotal,
+                'subtotal'         => $calculatedSubtotal,
+                'discount_id'      => $discountId,
                 'discount_percent' => $discountPercent,
-                'discount_amount' => $calculatedDiscountAmount,
-                'total' => $calculatedTotal,
-                'payment_method' => $validated['payment_method'],
-                'status' => 'pending',
-                'cashier_id' => $cashierId,
-                'cashier_name' => $cashierName,
+                'discount_amount'  => $calculatedDiscountAmount,
+                'total'            => $calculatedTotal,
+                'payment_method'   => $validated['payment_method'],
+                'status'           => 'pending',
+                'cashier_id'       => $cashierId,
             ]);
 
             foreach ($orderItemsData as $itemData) {
+                $addons = $itemData['_addons'];
+                unset($itemData['_addons']);
+
                 $itemData['order_id'] = $createdOrder->id;
-                OrderItem::create($itemData);
+                $orderItem = OrderItem::create($itemData);
+
+                // Write addons to normalized order_item_addons table (1NF + referential integrity fix)
+                foreach ($addons as $addon) {
+                    OrderItemAddon::create([
+                        'order_item_id' => $orderItem->id,
+                        'addon_id'      => $addon['addon_id'] ?? null,
+                        'addon_name'    => $addon['name'],
+                        'addon_price'   => $addon['price'],
+                    ]);
+                }
             }
 
             return $createdOrder;
         });
 
         return response()->json([
-            'success' => true,
-            'message' => 'Order processed successfully!',
+            'success'  => true,
+            'message'  => 'Order processed successfully!',
             'order_id' => $order->id,
-            'total' => $order->total,
+            'total'    => $order->total,
         ]);
     }
 
@@ -231,8 +259,7 @@ class OrderController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Order status updated successfully!',
-            'status' => $order->status
+            'status'  => $order->status
         ]);
     }
 }
-

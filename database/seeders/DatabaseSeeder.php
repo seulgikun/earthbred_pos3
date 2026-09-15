@@ -13,30 +13,36 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        \App\Models\User::create([
-            'name' => 'Earthbred Cashier',
-            'email' => 'cashier@earthbred.com',
-            'password' => bcrypt('123456'),
-            'role' => 'cashier',
-            'pin' => '123456',
-            'email_verified_at' => now(),
-        ]);
+        \App\Models\User::firstOrCreate(
+            ['email' => 'cashier@earthbred.com'],
+            [
+                'name' => 'Earthbred Cashier',
+                'password' => bcrypt('123456'),
+                'role' => 'cashier',
+                'pin' => '123456',
+                'email_verified_at' => now(),
+            ]
+        );
 
-        \App\Models\User::create([
-            'name' => 'Juan Reyes',
-            'email' => 'manager@earthbred.com',
-            'password' => bcrypt('password'),
-            'role' => 'manager',
-            'email_verified_at' => now(),
-        ]);
+        \App\Models\User::firstOrCreate(
+            ['email' => 'manager@earthbred.com'],
+            [
+                'name' => 'Juan Reyes',
+                'password' => bcrypt('password'),
+                'role' => 'manager',
+                'email_verified_at' => now(),
+            ]
+        );
 
-        \App\Models\User::create([
-            'name' => 'Christopher Lim',
-            'email' => 'christopherlim1995@gmail.com',
-            'password' => bcrypt('password'),
-            'role' => 'owner',
-            'email_verified_at' => now(),
-        ]);
+        \App\Models\User::firstOrCreate(
+            ['email' => 'christopherlim1995@gmail.com'],
+            [
+                'name' => 'Christopher Lim',
+                'password' => bcrypt('password'),
+                'role' => 'owner',
+                'email_verified_at' => now(),
+            ]
+        );
 
         $this->call([
             ProductSeeder::class,
