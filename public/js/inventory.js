@@ -249,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><span class="inv-item-name">${item.item_name}</span></td>
-                <td><span class="inv-category-tag">${item.category}</span></td>
+                <td><span class="inv-category-tag">${item.category || (item.category_record ? item.category_record.name : 'General')}</span></td>
                 <td><span class="inv-qty">${item.quantity}</span></td>
                 <td>
                     <span class="inv-status-badge ${statusClass}">
@@ -341,10 +341,11 @@ document.addEventListener('DOMContentLoaded', () => {
         searchInput.addEventListener('input', () => {
             const q = searchInput.value.toLowerCase().trim();
             const filtered = q
-                ? allItems.filter(i =>
-                    i.item_name.toLowerCase().includes(q) ||
-                    i.category.toLowerCase().includes(q)
-                  )
+                ? allItems.filter(i => {
+                    const name = (i.item_name || '').toLowerCase();
+                    const cat = (i.category || (i.category_record ? i.category_record.name : '')).toLowerCase();
+                    return name.includes(q) || cat.includes(q);
+                  })
                 : allItems;
             renderTable(filtered);
         });

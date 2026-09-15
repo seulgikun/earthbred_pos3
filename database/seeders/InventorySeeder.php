@@ -82,15 +82,18 @@ class InventorySeeder extends Seeder
         ];
 
         foreach ($items as $item) {
-            $inventory = Inventory::create($item);
+            $existing = Inventory::whereRaw('LOWER(TRIM(item_name)) = ?', [strtolower(trim($item['item_name']))])->first();
+            if (!$existing) {
+                $inventory = Inventory::create($item);
 
-            // Log the initial quantity setup
-            InventoryLog::create([
-                'inventory_id' => $inventory->id,
-                'quantity_changed' => $item['quantity'],
-                'issue_type' => $item['latest_issue_type'],
-                'notes' => 'Initial stock setup'
-            ]);
+                // Log the initial quantity setup
+                InventoryLog::create([
+                    'inventory_id' => $inventory->id,
+                    'quantity_changed' => $item['quantity'],
+                    'issue_type' => $item['latest_issue_type'],
+                    'notes' => 'Initial stock setup'
+                ]);
+            }
         }
     }
 }

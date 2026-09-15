@@ -20,6 +20,9 @@ class Addon extends Model
         'price' => 'float',
     ];
 
+    protected $appends = ['category'];
+    protected $with = ['categoryRecord'];
+
     protected static function booted()
     {
         static::saved(function () {

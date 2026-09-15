@@ -18,6 +18,9 @@ class Inventory extends Model
         'latest_issue_type'
     ];
 
+    protected $appends = ['category'];
+    protected $with = ['categoryRecord'];
+
     public function logs()
     {
         return $this->hasMany(InventoryLog::class);

@@ -18,6 +18,9 @@ class Product extends Model
         'picture'
     ];
 
+    protected $appends = ['category'];
+    protected $with = ['categoryRecord'];
+
     protected static function booted()
     {
         static::saved(function () {
