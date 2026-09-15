@@ -617,6 +617,17 @@
     <script src="<?= asset('js/pos-modal.js') ?>?v=<?= time() ?>"></script>
     <script src="<?= asset('js/clock-out.js') ?>?v=<?= time() ?>"></script>
     <script src="<?= asset('js/inventory.js') ?>?v=<?= time() ?>"></script>
+    <?php if (!isset($isManager) || !$isManager): ?>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.menu-item, .menu-list li').forEach(function(li) {
+                if (li.textContent.toLowerCase().includes('sales report')) {
+                    li.remove();
+                }
+            });
+        });
+    </script>
+    <?php endif; ?>
 </body>
 
 </html>

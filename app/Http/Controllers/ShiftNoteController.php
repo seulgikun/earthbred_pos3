@@ -13,7 +13,9 @@ class ShiftNoteController extends Controller
         $notes = \App\Models\ShiftNote::with(['cashier', 'categoryRecord'])
             ->orderBy('created_at', 'desc')
             ->get();
-        return view('shift-notes', compact('notes'));
+        return response(view('shift-notes', compact('notes')))
+            ->header('Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate')
+            ->header('Pragma', 'no-cache');
     }
 
     public function store(Request $request)

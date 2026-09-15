@@ -28,7 +28,9 @@ class OrderController extends Controller
         // Calculate total sales for today (completed and pending, exclude void)
         $totalSales = $orders->whereIn('status', ['pending', 'completed'])->sum('total');
 
-        return view('queue', compact('orders', 'totalSales'));
+        return response(view('queue', compact('orders', 'totalSales')))
+            ->header('Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate')
+            ->header('Pragma', 'no-cache');
     }
 
     /**

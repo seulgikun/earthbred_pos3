@@ -67,7 +67,9 @@ Route::middleware(['role:cashier,manager,owner'])->group(function () {
             return \App\Models\Addon::all();
         });
         $inventories = \App\Models\Inventory::with('categoryRecord')->get(['id', 'item_name', 'category_id', 'quantity', 'min_threshold']);
-        return view('pos', compact('products', 'addons', 'inventories'));
+        return response(view('pos', compact('products', 'addons', 'inventories')))
+            ->header('Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate')
+            ->header('Pragma', 'no-cache');
     });
 
     Route::get('/checkout', function () {
@@ -87,7 +89,9 @@ Route::middleware(['role:cashier,manager,owner'])->group(function () {
     Route::patch('/shift-notes/{id}/done', [ShiftNoteController::class, 'markDone']);
 
     Route::get('/inventory', function () {
-        return view('inventory');
+        return response(view('inventory'))
+            ->header('Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate')
+            ->header('Pragma', 'no-cache');
     });
 
     Route::get('/api/inventory', [InventoryController::class, 'index']);
@@ -133,7 +137,9 @@ Route::middleware(['role:cashier,manager,owner'])->group(function () {
 Route::middleware(['role:manager,owner'])->group(function () {
     Route::get('/manager', [ManagerController::class, 'index']);
     Route::get('/manager/inventory', function () {
-        return view('inventory', ['isManager' => true]);
+        return response(view('inventory', ['isManager' => true]))
+            ->header('Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate')
+            ->header('Pragma', 'no-cache');
     });
     Route::get('/manager/shift-notes', [ManagerController::class, 'shiftNotes']);
     Route::get('/manager/sales-report', [ManagerController::class, 'salesReport']);
