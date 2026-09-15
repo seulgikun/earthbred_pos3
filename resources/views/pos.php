@@ -115,21 +115,21 @@
                 <?php foreach($products as $product): 
                     $outOfStock = $product->isOutOfStock($inventories ?? null);
                 ?>
-                <div class="product-card <?= $outOfStock ? 'is-out-of-stock' : '' ?>" data-category="<?= htmlspecialchars($product->category) ?>" data-id="<?= $product->id ?>" data-price="<?= $product->discounted_price ? $product->discounted_price : $product->price ?>" data-out-of-stock="<?= $outOfStock ? 'true' : 'false' ?>">
+                <div class="product-card <?= $outOfStock ? 'is-out-of-stock' : '' ?>" data-category="<?= htmlspecialchars((string)($product->category ?? '')) ?>" data-id="<?= $product->id ?>" data-price="<?= $product->discounted_price ? $product->discounted_price : $product->price ?>" data-out-of-stock="<?= $outOfStock ? 'true' : 'false' ?>">
                     <?php if($outOfStock): ?>
                         <div class="out-of-stock-badge"><i class="fa-solid fa-ban"></i> OUT OF STOCK</div>
                     <?php else: ?>
                         <button class="add-btn"><i class="fa-solid fa-plus"></i></button>
                     <?php endif; ?>
-                    <img src="<?= asset('images/' . $product->picture) ?>" alt="<?= htmlspecialchars($product->name) ?>" class="product-image">
-                    <h4 class="product-name"><?= htmlspecialchars($product->name) ?></h4>
+                    <img src="<?= asset('images/' . ($product->picture ?? 'placeholder.png')) ?>" alt="<?= htmlspecialchars((string)($product->name ?? '')) ?>" class="product-image">
+                    <h4 class="product-name"><?= htmlspecialchars((string)($product->name ?? '')) ?></h4>
                     <?php if($product->discounted_price): ?>
                         <p class="product-price">
-                            <span style="text-decoration: line-through; font-size: 0.8em; color: #888;">₱ <?= number_format($product->price, 0) ?></span>
-                            ₱ <?= number_format($product->discounted_price, 0) ?>
+                            <span style="text-decoration: line-through; font-size: 0.8em; color: #888;">₱ <?= number_format((float)$product->price, 0) ?></span>
+                            ₱ <?= number_format((float)$product->discounted_price, 0) ?>
                         </p>
                     <?php else: ?>
-                        <p class="product-price">₱ <?= number_format($product->price, 0) ?></p>
+                        <p class="product-price">₱ <?= number_format((float)$product->price, 0) ?></p>
                     <?php endif; ?>
                 </div>
                 <?php endforeach; ?>
@@ -166,11 +166,11 @@
                     <h4 id="addonsSectionTitle">Add-ons</h4>
                     <?php if(!empty($addons) && count($addons) > 0): ?>
                         <?php foreach($addons as $addon): ?>
-                            <div class="addon-item" data-category="<?= htmlspecialchars($addon->category ?? 'drinks') ?>">
+                            <div class="addon-item" data-category="<?= htmlspecialchars((string)($addon->category ?? 'drinks')) ?>">
                                 <label class="addon-label">
-                                    <input type="checkbox" class="addon-checkbox" data-category="<?= htmlspecialchars($addon->category ?? 'drinks') ?>" data-price="<?= (float)$addon->price ?>" value="<?= htmlspecialchars($addon->name) ?>">
+                                    <input type="checkbox" class="addon-checkbox" data-category="<?= htmlspecialchars((string)($addon->category ?? 'drinks')) ?>" data-price="<?= (float)$addon->price ?>" value="<?= htmlspecialchars((string)$addon->name) ?>">
                                     <span class="custom-checkbox"></span>
-                                    <?= htmlspecialchars($addon->name) ?> <?= $addon->price > 0 ? '(+₱ ' . number_format($addon->price, 0) . ')' : '(Free)' ?>
+                                    <?= htmlspecialchars((string)$addon->name) ?> <?= $addon->price > 0 ? '(+₱ ' . number_format((float)$addon->price, 0) . ')' : '(Free)' ?>
                                 </label>
                             </div>
                         <?php endforeach; ?>
