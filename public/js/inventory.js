@@ -342,8 +342,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const q = searchInput.value.toLowerCase().trim();
             const filtered = q
                 ? allItems.filter(i => {
-                    const name = (i.item_name || '').toLowerCase();
-                    const cat = (i.category || (i.category_record ? i.category_record.name : '') || '').toLowerCase();
+                    const name = String(i.item_name || '').toLowerCase();
+                    const catName = i.category || (i.category_record && i.category_record.name) || '';
+                    const cat = String(catName).toLowerCase();
                     return name.includes(q) || cat.includes(q);
                   })
                 : allItems;
