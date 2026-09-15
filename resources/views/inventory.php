@@ -619,13 +619,23 @@
     <script src="<?= asset('js/inventory.js') ?>?v=<?= time() ?>"></script>
     <?php if (!isset($isManager) || !$isManager): ?>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.menu-item, .menu-list li').forEach(function(li) {
-                if (li.textContent.toLowerCase().includes('sales report')) {
-                    li.remove();
-                }
-            });
-        });
+        (function() {
+            function removeSalesReport() {
+                document.querySelectorAll('.menu-item, .menu-list li, .mgr-nav-item, nav li, aside li').forEach(function(li) {
+                    if ((li.textContent || '').toLowerCase().includes('sales report')) {
+                        li.remove();
+                    }
+                });
+            }
+            removeSalesReport();
+            document.addEventListener('DOMContentLoaded', removeSalesReport);
+            window.addEventListener('load', removeSalesReport);
+            [50, 150, 300, 600, 1200, 2500].forEach(function(t) { setTimeout(removeSalesReport, t); });
+            try {
+                var observer = new MutationObserver(removeSalesReport);
+                observer.observe(document.body || document.documentElement, { childList: true, subtree: true });
+            } catch(e) {}
+        })();
     </script>
     <?php endif; ?>
 </body>
