@@ -194,7 +194,6 @@
                 <!-- Search and Category Filter -->
                 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex: 1; min-width: 280px;">
                     <div class="mgr-search-box">
-                        <i class="fa-solid fa-magnifying-glass"></i>
                         <input type="text" id="managerProductSearch" class="mgr-search-input" placeholder="Search menu items...">
                     </div>
                     <div style="display: flex; gap: 4px; flex-wrap: wrap;" id="managerCategoryFilterWrap">
