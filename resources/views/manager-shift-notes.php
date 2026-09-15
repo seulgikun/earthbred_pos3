@@ -158,16 +158,26 @@
         </aside>
         <script>
             (function() {
+                function checkAuth() {
+                    const role = (localStorage.getItem('userRole') || '').toLowerCase();
+                    const uid = localStorage.getItem('userId');
+                    if (!role || !uid) {
+                        window.location.replace('<?= url('') ?>/login');
+                        return false;
+                    }
+                    if (role === 'cashier') {
+                        window.location.replace('<?= url('') ?>/pos');
+                        return false;
+                    }
+                    return true;
+                }
+                if (!checkAuth()) return;
                 window.addEventListener('pageshow', function (event) {
-                    if (event.persisted) {
+                    if (!checkAuth() || event.persisted) {
                         window.location.reload();
                     }
                 });
                 const role = (localStorage.getItem('userRole') || '').toLowerCase();
-                if (role === 'cashier') {
-                    window.location.replace('<?= url('') ?>/pos');
-                    return;
-                }
                 const roleLabel = role.charAt(0).toUpperCase() + role.slice(1) || 'Manager';
                 if (role === 'owner') {
                     document.body.classList.add('is-owner');

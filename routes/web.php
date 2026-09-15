@@ -35,6 +35,19 @@ Route::get('/login', function () {
         ->header('Pragma', 'no-cache');
 })->name('login');
 
+Route::match(['get', 'post'], '/logout', function (\Illuminate\Http\Request $request) {
+    \Illuminate\Support\Facades\Auth::logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+    if ($request->expectsJson() || $request->is('api/*')) {
+        return response()->json(['success' => true, 'message' => 'Logged out successfully.']);
+    }
+    return redirect('/login')->withHeaders([
+        'Cache-Control' => 'no-cache, no-store, max-age=0, must-revalidate',
+        'Pragma' => 'no-cache',
+    ]);
+})->name('logout');
+
 Route::get('/email/verify/{id}/{hash}', [UserController::class, 'verifyEmail'])->name('verification.verify');
 Route::get('/reset-password', function () {
     return view('reset-password');

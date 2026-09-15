@@ -53,11 +53,26 @@
                 visibility: visible !important;
                 color: #000000 !important;
             }
-        }
         .printable-receipt {
             display: none;
         }
     </style>
+    <script>
+        (function() {
+            function checkAuth() {
+                if (!localStorage.getItem('userId') || !localStorage.getItem('userRole')) {
+                    window.location.replace('<?= url('') ?>/login');
+                }
+            }
+            checkAuth();
+            window.addEventListener('pageshow', function (event) {
+                checkAuth();
+                if (event.persisted) {
+                    window.location.reload();
+                }
+            });
+        })();
+    </script>
 </head>
 <body>
     <div class="app-container">

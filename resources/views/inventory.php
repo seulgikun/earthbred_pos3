@@ -81,6 +81,22 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <!-- html2pdf -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+        (function() {
+            function checkAuth() {
+                if (!localStorage.getItem('userId') || !localStorage.getItem('userRole')) {
+                    window.location.replace('<?= url('') ?>/login');
+                }
+            }
+            checkAuth();
+            window.addEventListener('pageshow', function (event) {
+                checkAuth();
+                if (event.persisted) {
+                    window.location.reload();
+                }
+            });
+        })();
+    </script>
 </head>
 
 <body>

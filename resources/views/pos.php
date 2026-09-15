@@ -14,7 +14,22 @@
     <link rel="icon" type="image/png" href="<?= asset('favicon.png') ?>?v=3.0">
     <link rel="apple-touch-icon" href="<?= asset('images/apple-touch-icon.png') ?>?v=3.0">
     <meta name="csrf-token" content="<?= csrf_token() ?>">
-
+    <script>
+        (function() {
+            function checkAuth() {
+                if (!localStorage.getItem('userId') || !localStorage.getItem('userRole')) {
+                    window.location.replace('<?= url('') ?>/login');
+                }
+            }
+            checkAuth();
+            window.addEventListener('pageshow', function (event) {
+                checkAuth();
+                if (event.persisted) {
+                    window.location.reload();
+                }
+            });
+        })();
+    </script>
 </head>
 <body>
     <div class="sidebar-overlay" id="sidebarOverlay"></div>

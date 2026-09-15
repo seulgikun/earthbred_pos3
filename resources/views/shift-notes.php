@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -79,8 +79,23 @@
             .top-nav {
                 padding: 0.85rem 1.25rem !important;
             }
-        }
     </style>
+    <script>
+        (function() {
+            function checkAuth() {
+                if (!localStorage.getItem('userId') || !localStorage.getItem('userRole')) {
+                    window.location.replace('<?= url('') ?>/login');
+                }
+            }
+            checkAuth();
+            window.addEventListener('pageshow', function (event) {
+                checkAuth();
+                if (event.persisted) {
+                    window.location.reload();
+                }
+            });
+        })();
+    </script>
 </head>
 <body>
     <div class="sidebar-overlay" id="sidebarOverlay"></div>

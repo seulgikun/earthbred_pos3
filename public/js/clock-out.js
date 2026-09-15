@@ -5,8 +5,15 @@
 document.addEventListener('DOMContentLoaded', () => {
     const getBaseUrl = function() {
         const pathname = window.location.pathname;
-        const idx = pathname.toLowerCase().indexOf('/backend/public');
-        return idx !== -1 ? pathname.substring(0, idx + '/backend/public'.length) : '';
+        const backendIdx = pathname.toLowerCase().indexOf('/backend/public');
+        if (backendIdx !== -1) {
+            return pathname.substring(0, backendIdx + '/backend/public'.length);
+        }
+        const xamppIdx = pathname.toLowerCase().indexOf('/earthbred-pos-master/public');
+        if (xamppIdx !== -1) {
+            return pathname.substring(0, xamppIdx + '/earthbred-pos-master/public'.length);
+        }
+        return '';
     };
 
     // ── Guard to prevent double-firing ──────────────────────────────────────
@@ -34,15 +41,30 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     }
 
-    function performLogout() {
+    async function performLogout() {
+        const BASE = getBaseUrl();
         try {
-            localStorage.removeItem('earthbred_cart');
-            localStorage.removeItem('userRole');
-            localStorage.removeItem('userName');
-            localStorage.removeItem('userId');
-            localStorage.removeItem('userEmail');
+            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+            const token = csrfMeta ? csrfMeta.getAttribute('content') : '';
+            await fetch(BASE + '/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': token
+                }
+            });
+        } catch(e) {
+            console.error('Server logout notice:', e);
+        }
+
+        try {
+            localStorage.clear();
+            sessionStorage.clear();
         } catch(e) {}
-        window.location.href = getBaseUrl() + '/login';
+
+        // Replace browser history so going Back will NOT return to the protected screen
+        window.location.replace(BASE + '/login');
     }
 
     // Synchronize active account user name across all sidebars and headers

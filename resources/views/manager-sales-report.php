@@ -480,17 +480,27 @@
     <script>
         // STRICT ACCESS GUARD: ONLY MANAGER OR OWNER
         (function() {
+            function checkAuth() {
+                const role = (localStorage.getItem('userRole') || '').toLowerCase();
+                const uid = localStorage.getItem('userId');
+                if (!role || !uid) {
+                    window.location.replace('<?= url('') ?>/login');
+                    return false;
+                }
+                if (role !== 'owner' && role !== 'manager') {
+                    window.location.replace('<?= url('') ?>/pos');
+                    return false;
+                }
+                return true;
+            }
+            if (!checkAuth()) return;
             window.addEventListener('pageshow', function (event) {
-                if (event.persisted) {
+                if (!checkAuth() || event.persisted) {
                     window.location.reload();
                 }
             });
             const role = (localStorage.getItem('userRole') || '').toLowerCase();
             const roleLabel = role.charAt(0).toUpperCase() + role.slice(1) || 'Manager';
-            if (role !== 'owner' && role !== 'manager') {
-                window.location.replace('<?= url('') ?>/pos');
-                return;
-            }
             if (role === 'owner') {
                 document.body.classList.add('is-owner');
                 document.querySelectorAll('.owner-only-link').forEach(el => el.style.setProperty('display', 'flex', 'important'));
