@@ -613,7 +613,7 @@
 
     <script src="<?= asset('js/pos-modal.js') ?>?v=1.0.0"></script>
     <script src="<?= asset('js/clock-out.js') ?>?v=1.0.0"></script>
-    <script src="<?= asset('js/inventory.js') ?>?v=1.1.3"></script>
+    <script src="<?= asset('js/inventory-v2.js') ?>"></script>
 </body>
 
 </html>
