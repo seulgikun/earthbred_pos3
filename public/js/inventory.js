@@ -340,12 +340,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (searchInput) {
         searchInput.addEventListener('input', () => {
             const q = searchInput.value.toLowerCase().trim();
+            const safeStr = v => (v == null ? '' : String(v)).toLowerCase();
             const filtered = q
                 ? allItems.filter(i => {
-                    const name = String(i.item_name || '').toLowerCase();
-                    const catName = i.category || (i.category_record && i.category_record.name) || '';
-                    const cat = String(catName).toLowerCase();
-                    return name.includes(q) || cat.includes(q);
+                    return safeStr(i.item_name).includes(q) ||
+                           safeStr(i.category).includes(q) ||
+                           safeStr(i.category_record && i.category_record.name).includes(q);
                   })
                 : allItems;
             renderTable(filtered);
