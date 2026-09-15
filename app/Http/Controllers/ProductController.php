@@ -14,7 +14,9 @@ class ProductController extends Controller
     public function index()
     {
         $products = Product::with('categoryRecord')->get();
-        return view('manager-products', compact('products'));
+        return response(view('manager-products', compact('products')))
+            ->header('Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate')
+            ->header('Pragma', 'no-cache');
     }
 
     public function store(Request $request)

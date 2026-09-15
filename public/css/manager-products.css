@@ -354,5 +354,53 @@
     border: 1px solid #eadeca;
 }
 
+/* ==========================================
+   Search Box UI Fix (Prevents icon/text overlap)
+   ========================================== */
+.mgr-search-box {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    background: #ffffff !important;
+    border: 1.5px solid #eadeca !important;
+    border-radius: 8px !important;
+    padding: 0 14px !important;
+    height: 40px !important;
+    flex: 1 !important;
+    max-width: 320px !important;
+    min-width: 200px !important;
+    box-sizing: border-box !important;
+    transition: all 0.2s ease !important;
+}
 
+.mgr-search-box:focus-within {
+    border-color: #6a3a30 !important;
+    box-shadow: 0 0 0 3px rgba(106, 58, 48, 0.12) !important;
+}
 
+.mgr-search-box i {
+    color: #8d786c !important;
+    font-size: 0.88rem !important;
+    flex-shrink: 0 !important;
+    position: static !important;
+    transform: none !important;
+}
+
+.mgr-search-box input.mgr-search-input {
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    font-family: 'Poppins', sans-serif !important;
+    font-size: 0.88rem !important;
+    color: #2c1a14 !important;
+    outline: none !important;
+    width: 100% !important;
+    height: 100% !important;
+    box-shadow: none !important;
+}
+
+.mgr-search-box input.mgr-search-input::placeholder {
+    color: #9c8a7e !important;
+    opacity: 1 !important;
+}

@@ -6,10 +6,10 @@
     <title>Earthbred - Product Management</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Montserrat:wght@400;600;700;800;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="<?= asset('css/manager.css') ?>?v=1.0.0">
-    <link rel="stylesheet" href="<?= asset('css/manager-products.css') ?>?v=1.1.0">
-    <link rel="stylesheet" href="<?= asset('css/pos-modal.css') ?>?v=1.1.0">
-    <link rel="stylesheet" href="<?= asset('css/ios26-theme.css') ?>?v=1.1.0">
+    <link rel="stylesheet" href="<?= asset('css/manager.css') ?>?v=<?= time() ?>">
+    <link rel="stylesheet" href="<?= asset('css/manager-products.css') ?>?v=<?= time() ?>">
+    <link rel="stylesheet" href="<?= asset('css/pos-modal.css') ?>?v=<?= time() ?>">
+    <link rel="stylesheet" href="<?= asset('css/ios26-theme.css') ?>?v=<?= time() ?>">
     <link rel="icon" type="image/png" href="<?= asset('favicon.png') ?>?v=3.0">
     <link rel="apple-touch-icon" href="<?= asset('images/apple-touch-icon.png') ?>?v=3.0">
     <meta name="csrf-token" content="<?= csrf_token() ?>">
@@ -30,6 +30,49 @@
         .add-product-btn:hover {
             transform: translateY(-2px) !important;
             box-shadow: 0 6px 18px rgba(45, 26, 17, 0.35) !important;
+        }
+        .mgr-search-box {
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+            background: #ffffff !important;
+            border: 1.5px solid #eadeca !important;
+            border-radius: 8px !important;
+            padding: 0 14px !important;
+            height: 40px !important;
+            flex: 1 !important;
+            max-width: 320px !important;
+            min-width: 200px !important;
+            box-sizing: border-box !important;
+            transition: all 0.2s ease !important;
+        }
+        .mgr-search-box:focus-within {
+            border-color: #6a3a30 !important;
+            box-shadow: 0 0 0 3px rgba(106, 58, 48, 0.12) !important;
+        }
+        .mgr-search-box i {
+            color: #8d786c !important;
+            font-size: 0.88rem !important;
+            flex-shrink: 0 !important;
+            position: static !important;
+            transform: none !important;
+        }
+        .mgr-search-box input.mgr-search-input {
+            border: none !important;
+            background: transparent !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            font-family: 'Poppins', sans-serif !important;
+            font-size: 0.88rem !important;
+            color: #2c1a14 !important;
+            outline: none !important;
+            width: 100% !important;
+            height: 100% !important;
+            box-shadow: none !important;
+        }
+        .mgr-search-box input.mgr-search-input::placeholder {
+            color: #9c8a7e !important;
+            opacity: 1 !important;
         }
     </style>
 </head>
@@ -150,9 +193,9 @@
             <div style="padding: 1.25rem 1.25rem 0; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
                 <!-- Search and Category Filter -->
                 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex: 1; min-width: 280px;">
-                    <div style="position: relative; flex: 1; max-width: 320px;">
-                        <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #8d786c; font-size: 0.85rem;"></i>
-                        <input type="text" id="managerProductSearch" placeholder="Search menu items..." style="width: 100%; padding: 8px 12px 8px 34px; border: 1.5px solid #eadeca; border-radius: 8px; font-family: 'Poppins', sans-serif; font-size: 0.85rem; outline: none; background: #fff; box-sizing: border-box;">
+                    <div class="mgr-search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="managerProductSearch" class="mgr-search-input" placeholder="Search menu items...">
                     </div>
                     <div style="display: flex; gap: 4px; flex-wrap: wrap;" id="managerCategoryFilterWrap">
                         <button type="button" class="mgr-filter-pill active" data-cat="all">All</button>
@@ -304,8 +347,8 @@
                     <!-- populated by js -->
                 </div>
             </div>
-    <script src="<?= asset('js/pos-modal.js') ?>?v=1.1.0"></script>
-    <script src="<?= asset('js/clock-out.js') ?>?v=1.1.0"></script>
-    <script src="<?= asset('js/manager-products.js') ?>?v=1.4.0"></script>
+    <script src="<?= asset('js/pos-modal.js') ?>?v=<?= time() ?>"></script>
+    <script src="<?= asset('js/clock-out.js') ?>?v=<?= time() ?>"></script>
+    <script src="<?= asset('js/manager-products.js') ?>?v=<?= time() ?>"></script>
 </body>
 </html>
