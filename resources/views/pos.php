@@ -204,8 +204,18 @@
 
 
     
-    <script src="<?= asset('js/pos-modal.js') ?>?v=1.1.0"></script>
-    <script src="<?= asset('js/clock-out.js') ?>?v=1.1.0"></script>
-    <script src="<?= asset('js/pos.js') ?>?v=1.3.0"></script>
+    <script src="<?= asset('js/pos-modal.js') ?>?v=<?= time() ?>"></script>
+    <script src="<?= asset('js/clock-out.js') ?>?v=<?= time() ?>"></script>
+    <script src="<?= asset('js/pos.js') ?>?v=<?= time() ?>"></script>
+    <script>
+        // Safety: remove any Sales Report menu item from cashier sidebar
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.menu-item, .menu-list li').forEach(function(li) {
+                if (li.textContent.toLowerCase().includes('sales report')) {
+                    li.remove();
+                }
+            });
+        });
+    </script>
 </body>
 </html>
