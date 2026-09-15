@@ -17,7 +17,29 @@ class InventoryController extends Controller
      */
     public function index()
     {
-        $items = Inventory::all();
+        // Automatically clean up any duplicate items at query time
+        $allItems = Inventory::orderBy('id', 'asc')->get();
+        $seen = [];
+        $unique = [];
+        $duplicateIds = [];
+
+        foreach ($allItems as $item) {
+            $key = strtolower(trim($item->item_name));
+            if (isset($seen[$key])) {
+                $duplicateIds[] = $item->id;
+            } else {
+                $seen[$key] = true;
+                $unique[] = $item;
+            }
+        }
+
+        // Clean up redundant duplicate rows from database if any exist
+        if (!empty($duplicateIds)) {
+            InventoryLog::whereIn('inventory_id', $duplicateIds)->delete();
+            Inventory::whereIn('id', $duplicateIds)->forceDelete();
+        }
+
+        $items = collect($unique);
         
         // Calculate status dynamically for safety/consistency
         $items->map(function ($item) {

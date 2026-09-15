@@ -614,9 +614,9 @@
         </div>
     </div>
 
-    <script src="<?= asset('js/pos-modal.js') ?>?v=1.0.0"></script>
-    <script src="<?= asset('js/clock-out.js') ?>?v=1.0.0"></script>
-    <script src="<?= asset('js/inventory-v2.js') ?>"></script>
+    <script src="<?= asset('js/pos-modal.js') ?>?v=<?= time() ?>"></script>
+    <script src="<?= asset('js/clock-out.js') ?>?v=<?= time() ?>"></script>
+    <script src="<?= asset('js/inventory.js') ?>?v=<?= time() ?>"></script>
 </body>
 
 </html>
